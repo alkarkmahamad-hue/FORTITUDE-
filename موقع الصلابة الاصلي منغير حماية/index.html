@@ -1,0 +1,2684 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORTITUDE // Mission Control v4.1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.85);
+            --text-color: #f3f4f6;
+            --primary-neon: #10b981;
+            --neon-glow: rgba(16, 185, 129, 0.4);
+            --cursor-color: #10b981;
+            --border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        .custom-cursor {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background-color: var(--cursor-color);
+            border-radius: 50%;
+            pointer-events: none !important;
+            box-shadow: 0 0 12px var(--cursor-color), 0 0 24px var(--cursor-color);
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+
+        button, .select-card, .mission-info, .icon-btn, input, select, textarea, .settings-accordion-header {
+            position: relative;
+            z-index: 10;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-area h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-neon);
+            text-shadow: 0 0 10px var(--neon-glow);
+        }
+
+        .top-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .desktop-icons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        .mobile-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 75px;
+            left: 20px;
+            background: var(--card-bg);
+            border: 2px solid var(--primary-neon);
+            border-radius: 14px;
+            padding: 15px;
+            box-shadow: 0 0 25px var(--neon-glow);
+            z-index: 15000;
+            flex-direction: column;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        html[dir="ltr"] .mobile-dropdown-menu { left: auto; right: 20px; }
+
+        @media(max-width: 900px) {
+            .desktop-icons { display: none !important; }
+            .mobile-menu-btn { display: flex !important; }
+        }
+
+        .icon-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--primary-neon);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-glow);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--primary-neon);
+        }
+
+        .exp-badge {
+            background: var(--card-bg);
+            border: 2px solid var(--primary-neon);
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--neon-glow);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        @media(max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .logo-area h1 { font-size: 1.3rem; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-bar-container {
+            background: rgba(128, 128, 128, 0.15);
+            border-radius: 10px;
+            height: 14px;
+            overflow: hidden;
+            margin: 15px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-neon), #34d399);
+            width: 0%;
+            box-shadow: 0 0 10px var(--primary-neon);
+            transition: width 0.3s ease-in-out;
+        }
+
+        .mission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(128, 128, 128, 0.08);
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .mission-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .mission-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .delete-mission-btn {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.15s;
+        }
+
+        .delete-mission-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .add-mission-btn {
+            background: transparent;
+            border: 2px dashed var(--primary-neon);
+            color: var(--primary-neon);
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .clear-all-btn {
+            background: transparent;
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            width: 100%;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .clear-all-btn:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(3, 7, 18, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 2px solid var(--primary-neon);
+            padding: 25px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 650px;
+            box-shadow: 0 0 30px var(--neon-glow);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-neon);
+            z-index: 20;
+        }
+
+        html[dir="ltr"] .close-modal { left: auto; right: 20px; }
+
+        .mission-option-card {
+            background: rgba(128, 128, 128, 0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mission-option-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .school-sub-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 15px;
+            border-right: 2px solid var(--border-color);
+            margin-top: 5px;
+        }
+
+        .school-sub-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .mission-quantity-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mission-quantity-input {
+            width: 60px;
+            padding: 8px;
+            background: rgba(128, 128, 128, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .add-qty-btn {
+            background: var(--primary-neon);
+            color: #030712;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-glow);
+        }
+
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .selection-grid-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        @media(max-width: 700px) {
+            .selection-grid-5 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .select-card {
+            background: rgba(128, 128, 128, 0.08);
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .select-card.selected {
+            border-color: var(--primary-neon);
+            background: rgba(16, 185, 129, 0.15);
+            box-shadow: 0 0 15px var(--neon-glow);
+        }
+
+        .select-card-icon { font-size: 2rem; margin-bottom: 6px; }
+        .select-card-title { font-size: 1rem; font-weight: bold; color: var(--text-color); }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--primary-neon); font-size: 0.95rem; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 15px; background: rgba(128,128,128,0.1); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-color); font-family: 'Cairo', sans-serif; font-size: 1rem; outline: none;
+        }
+
+        .color-picker-group {
+            display: flex; justify-content: space-between; align-items: center; background: rgba(128, 128, 128, 0.08); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 10px; margin-bottom: 10px;
+        }
+        .color-picker-group input[type="color"] { border: none; width: 40px; height: 35px; border-radius: 8px; cursor: pointer; background: transparent; }
+
+        .cert-btn {
+            background: var(--primary-neon); color: #030712; border: none; padding: 12px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 0 20px var(--primary-neon); margin-top: 10px; width: 100%;
+        }
+
+        .info-box { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary-neon); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.6; }
+
+        .settings-accordion-item { border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 12px; background: rgba(128, 128, 128, 0.05); overflow: hidden; }
+        .settings-accordion-header { padding: 14px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: bold; color: var(--primary-neon); background: rgba(128, 128, 128, 0.08); user-select: none; }
+        .settings-accordion-content { padding: 15px; display: none; border-top: 1px solid var(--border-color); background: rgba(3, 7, 18, 0.3); }
+        .settings-accordion-content.open { display: block; }
+
+        #dailyStarOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(3, 7, 18, 0.85);
+            z-index: 60000; display: none;
+            justify-content: center; align-items: center;
+            flex-direction: column; text-align: center;
+        }
+        .growing-star {
+            font-size: 3rem;
+            animation: popAndGrowStar 1.2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 0 30px gold);
+        }
+        @keyframes popAndGrowStar {
+            0% { transform: scale(0.1); opacity: 0; }
+            50% { transform: scale(1.4); opacity: 1; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        #glacierShieldOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #030712; z-index: 40000; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;
+        }
+        .glacier-mountain-container { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .ice-mountain { width: 0; height: 0; border-left: 140px solid transparent; border-right: 140px solid transparent; border-bottom: 280px solid #38bdf8; position: relative; filter: drop-shadow(0 0 30px rgba(56, 189, 248, 0.5)); margin-bottom: 30px; transform-origin: bottom center; }
+        .crack-line { position: absolute; background: #ffffff; height: 3px; opacity: 0; box-shadow: 0 0 10px #ffffff, 0 0 20px #38bdf8; transform-origin: center; z-index: 10; }
+        .explosion-flash { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 10px; height: 10px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 100px 50px #ffffff, 0 0 200px 100px #38bdf8; opacity: 0; pointer-events: none; z-index: 20; }
+        .cracking .crack-line { animation: showCracks 0.8s forwards ease-in-out; }
+        @keyframes showCracks { 0% { opacity: 0; transform: scale(0.2); } 70% { opacity: 1; transform: scale(1); } 100% { opacity: 1; transform: scale(1.1); } }
+        .cracking .ice-mountain { animation: preExplodeShake 0.8s forwards ease-in-out; }
+        @keyframes preExplodeShake { 0% { transform: scale(1) translate(0, 0); } 20% { transform: scale(1.03) translate(-3px, 2px) rotate(-1deg); } 40% { transform: scale(0.98) translate(3px, -2px) rotate(1deg); } 60% { transform: scale(1.05) translate(-4px, -3px) rotate(-2deg); filter: brightness(2); } 80% { transform: scale(0.95) translate(4px, 3px) rotate(2deg); filter: brightness(3); } 100% { transform: scale(1.1) translate(0, 0); filter: brightness(4); } }
+        .exploding .explosion-flash { animation: explodeBoom 0.6s forwards cubic-bezier(0.1, 1, 0.3, 1); }
+        @keyframes explodeBoom { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(25); opacity: 0.9; } 100% { transform: translate(-50%, -50%) scale(60); opacity: 0; } }
+        .exploding .ice-mountain { animation: shatterPieces 0.6s forwards ease-in; }
+        @keyframes shatterPieces { 0% { transform: scale(1.1); opacity: 1; filter: brightness(5); } 100% { transform: scale(1.5) rotate(25deg) translateY(80px); opacity: 0; filter: blur(10px); } }
+
+        #certificateArea, #planArea {
+            background: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border: 3px solid var(--primary-neon) !important;
+            box-shadow: 0 0 35px var(--neon-glow) !important;
+            position: relative;
+        }
+        #certificateArea::before, #planArea::before {
+            content: "";
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid var(--border-color);
+            pointer-events: none;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-cursor" id="customCursor"></div>
+
+    <div id="dailyStarOverlay" onclick="closeDailyStarOverlay()">
+        <div class="growing-star">⭐</div>
+        <h2 style="color: gold; margin-top: 15px; font-weight: 800;">أتممت مهام اليوم بنجاح يا بطل!</h2>
+        <p style="opacity: 0.8; margin-top: 8px; font-size: 1rem;">انقر في أي مكان للمتابعة ✨</p>
+    </div>
+
+    <div id="glacierShieldOverlay">
+        <div class="glacier-mountain-container" id="glacierContainer">
+            <div class="ice-mountain" id="mainIceMountain">
+                <div class="crack-line" style="top: 40px; left: 140px; width: 120px; transform: rotate(45deg);"></div>
+                <div class="crack-line" style="top: 100px; left: 80px; width: 140px; transform: rotate(-30deg);"></div>
+                <div class="crack-line" style="top: 160px; left: 40px; width: 180px; transform: rotate(15deg);"></div>
+                <div class="crack-line" style="top: 80px; left: 140px; width: 160px; transform: rotate(90deg);"></div>
+            </div>
+            <div class="explosion-flash" id="explosionFlash"></div>
+            <p style="color: #38bdf8; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 10px rgba(56,189,248,0.6);" id="glacierStatusText">🛡️ درع التجميد مفعل - محمي اليوم بالكامل</p>
+            <button class="cert-btn" id="breakShieldBtn" style="background: #38bdf8; color: #030712; width: auto; padding: 14px 40px; font-size: 1.2rem; box-shadow: 0 0 25px rgba(56,189,248,0.8);" onclick="requestBreakShield()">كسر التجميد ⚡</button>
+        </div>
+    </div>
+
+    <div id="rewardSessionOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(3, 7, 18, 0.95); z-index: 50000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px;">
+        <div id="rewardOverlayIcon" style="font-size: 5rem; margin-bottom: 15px; filter: drop-shadow(0 0 20px var(--primary-neon));">☕</div>
+        <h2 id="rewardOverlayTitle" style="color: var(--primary-neon); font-size: 2rem; font-weight: 800; margin-bottom: 10px;">وقت الاسترخاء والراحة</h2>
+        <p id="rewardOverlaySub" style="font-size: 1.1rem; opacity: 0.8; margin-bottom: 25px;">استمتع بوقتك؛ سيتم إنهاء الجلسة تلقائياً بعد انتهاء الوقت:</p>
+        <div id="rewardTimerDisplay" style="font-size: 4.5rem; font-weight: 800; font-family: monospace; color: #fff; text-shadow: 0 0 25px var(--primary-neon); margin-bottom: 30px;">30:00</div>
+        <button class="cert-btn" style="width: auto; padding: 14px 40px; font-size: 1.2rem; background: var(--primary-neon); color: #030712;" onclick="finishRewardSessionManually()">انتهيت بنجاح ✓</button>
+    </div>
+
+    <div class="modal" id="onboardingModal" style="display: flex; z-index: 15000;">
+        <div class="modal-content">
+            <h2 id="onboardMainTitle" style="color: var(--primary-neon); margin-bottom: 8px; text-align: center;">🚀 تخصيص بيئة العمل والنظام الدراسي</h2>
+            <p id="onboardSubTitle" style="text-align: center; margin-bottom: 20px; opacity: 0.8; font-size: 0.95rem;">اختر النظام الدراسي والبيانات لتخصيص تجربتك:</p>
+            
+            <div class="form-group">
+                <label style="color: var(--primary-neon);">🎓 اختر النظام الدراسي:</label>
+                <div class="selection-grid">
+                    <div class="select-card selected" id="systemCard_qodrat" onclick="selectSystemCard('qodrat')">
+                        <div class="select-card-icon">⚡</div>
+                        <div class="select-card-title">القدرات العامة</div>
+                    </div>
+                    <div class="select-card" id="systemCard_school" onclick="selectSystemCard('school')">
+                        <div class="select-card-icon">🏫</div>
+                        <div class="select-card-title">المدرسة (المناهج)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label id="onboardGenderLabel">👤 اختر الجنس:</label>
+                <div class="selection-grid">
+                    <div class="select-card selected" id="genderCard_ذكر" onclick="selectGenderCard('ذكر')">
+                        <div class="select-card-icon">👨‍🎓</div>
+                        <div class="select-card-title" id="genderTextMale">ذكر</div>
+                    </div>
+                    <div class="select-card" id="genderCard_أنثى" onclick="selectGenderCard('أنثى')">
+                        <div class="select-card-icon">👩‍🎓</div>
+                        <div class="select-card-title" id="genderTextFemale">أنثى</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label id="onboardInterestLabel">🎯 اختر الاهتمام الأساسي:</label>
+                <div class="selection-grid-5">
+                    <div class="select-card selected" id="interestCard_طيران" onclick="selectInterestCard('طيران')">
+                        <div class="select-card-icon">✈️</div>
+                        <div class="select-card-title" id="intTextAviation">طيران</div>
+                    </div>
+                    <div class="select-card" id="interestCard_برمجة" onclick="selectInterestCard('برمجة')">
+                        <div class="select-card-icon">💻</div>
+                        <div class="select-card-title" id="intTextCoding">برمجة</div>
+                    </div>
+                    <div class="select-card" id="interestCard_هندسة" onclick="selectInterestCard('هندسة')">
+                        <div class="select-card-icon">🏗️</div>
+                        <div class="select-card-title" id="intTextEngineering">هندسة</div>
+                    </div>
+                    <div class="select-card" id="interestCard_طب" onclick="selectInterestCard('طب')">
+                        <div class="select-card-icon">🩺</div>
+                        <div class="select-card-title" id="intTextMedicine">طب</div>
+                    </div>
+                    <div class="select-card" id="interestCard_لغات" onclick="selectInterestCard('لغات')">
+                        <div class="select-card-icon">🗣️</div>
+                        <div class="select-card-title" id="intTextLanguages">لغات</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="cert-btn" id="onboardSubmitBtn" onclick="saveOnboardingData()">حفظ وبدء تشغيل النظام ⚡</button>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainerApp" style="display: none;">
+        <header>
+            <div class="logo-area">
+                <h1 id="siteTitle">FORTITUDE // Mission Control</h1>
+            </div>
+            <div class="top-controls">
+                <div class="exp-badge">
+                    <span id="expDisplay">EXP 0</span> <span>✨</span>
+                </div>
+
+                <div class="desktop-icons">
+                    <button class="icon-btn" onclick="openPomodoroModal()" title="Pomodoro Timer" id="pomodoroHeaderBtn" style="border-color: var(--primary-neon);">⏱️</button>
+                    <button class="icon-btn" onclick="toggleSettings()" title="Settings">⚙️</button>
+                    <button class="icon-btn" onclick="toggleShop()" title="Shop">🛒</button>
+                    <button class="icon-btn" onclick="toggleTheme()" title="Theme">🌓</button>
+                    <button class="icon-btn" onclick="toggleLanguage()" title="Language">🌐</button>
+                </div>
+
+                <button class="icon-btn mobile-menu-btn" onclick="toggleMobileMenu()" title="القائمة الرئيسية" id="mobileMenuBtn">☰</button>
+
+                <div class="mobile-dropdown-menu" id="mobileDropdownMenu">
+                    <button class="icon-btn" onclick="openPomodoroModal(); toggleMobileMenu();" title="Pomodoro Timer" id="pomodoroMobileHeaderBtn" style="border-color: var(--primary-neon); width: 100%; border-radius: 10px; justify-content: flex-start; padding: 0 15px; gap: 10px;">⏱️ <span style="font-size:0.9rem;">مؤقت التركيز</span></button>
+                    <button class="icon-btn" onclick="toggleSettings(); toggleMobileMenu();" title="Settings" style="width: 100%; border-radius: 10px; justify-content: flex-start; padding: 0 15px; gap: 10px;">⚙️ <span style="font-size:0.9rem;">الإعدادات</span></button>
+                    <button class="icon-btn" onclick="toggleShop(); toggleMobileMenu();" title="Shop" style="width: 100%; border-radius: 10px; justify-content: flex-start; padding: 0 15px; gap: 10px;">🛒 <span style="font-size:0.9rem;">المتجر</span></button>
+                    <button class="icon-btn" onclick="toggleTheme(); toggleMobileMenu();" title="Theme" style="width: 100%; border-radius: 10px; justify-content: flex-start; padding: 0 15px; gap: 10px;">🌓 <span style="font-size:0.9rem;">المود (الوضع)</span></button>
+                    <button class="icon-btn" onclick="toggleLanguage(); toggleMobileMenu();" title="Language" style="width: 100%; border-radius: 10px; justify-content: flex-start; padding: 0 15px; gap: 10px;">🌐 <span style="font-size:0.9rem;">اللغة</span></button>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div>
+                <div class="card">
+                    <div class="card-title">
+                        <span id="dailyProgTitle">تقدم المهام اليومية</span>
+                        <span id="dailyPercentage" style="color: var(--primary-neon);">0%</span>
+                    </div>
+                    <p id="dailyStatusText" style="font-size: 0.9rem; opacity: 0.8;">0 من 0 مهام مكتملة</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="dailyProgressBar"></div>
+                    </div>
+                    <div id="dailyRewardSymbol" style="font-size: 1.8rem; margin-top: 10px; text-align: center;"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span id="weeklyProgTitle">تقدم القطاع الأسبوعي</span>
+                        <span id="weeklyPercentage" style="color: var(--primary-neon);">0%</span>
+                    </div>
+                    <p id="weeklyDesc" style="font-size: 0.9rem; opacity: 0.8;">التقدم الإجمالي بناءً على المهام المكتسبة أسبوعياً</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="weeklyProgressBar"></div>
+                    </div>
+                    <button class="add-mission-btn" id="openWeeklyPlannerBtn" onclick="openWeeklyPlanner()" style="margin-top: 15px;">📅 تخطيط وإضافة مهام الأسبوع بالكامل</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span id="todayProtocolTitle">عناصر بروتوكول اليوم</span>
+                        <span id="clickCompleteText" style="font-size: 0.8rem; opacity: 0.7;">انقر للإتمام</span>
+                    </div>
+                    <div id="missionsContainer"></div>
+                    <button class="add-mission-btn" id="addMissionBtnText" onclick="openAddFromWeeklyModal()">+ إضافة مهمة لليوم من جدول الأسبوع</button>
+                    <button class="add-mission-btn" id="addTodayOnlyBtnText" onclick="openTodayOnlyPlannerModal()" style="border-color: #3b82f6; color: #3b82f6; margin-top: 8px;">+ إضافة مهمة جديدة لليوم فقط ⚡</button>
+                    <button class="clear-all-btn" id="clearAllBtnText" onclick="clearAllMissions()">🗑️ مسح مهام اليوم الحالية</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="card" id="mainDashboardCard">
+                    <div class="card-title">
+                        <span id="dynamicStatusTitle">حالة البطل الخطير</span>
+                    </div>
+                    <p style="margin-bottom: 8px;"><strong id="systemTypeLabel">النظام الدراسي:</strong> <span id="displaySystemType" style="color: var(--primary-neon); font-weight: bold;">--</span></p>
+                    <p style="margin-bottom: 8px;"><strong id="genderLabel">الجنس:</strong> <span id="displayGender" style="color: var(--primary-neon);">--</span></p>
+                    <p style="margin-bottom: 8px;"><strong id="interestLabel">الاهتمام:</strong> <span id="displayInterest" style="color: var(--primary-neon);">--</span></p>
+                    <p style="margin-bottom: 12px;"><strong id="streakLabel">عدد المتتالية في المذاكرة:</strong> <span id="currentStreak" style="color: var(--primary-neon); font-weight: bold;">اليوم 1</span> 🔥</p>
+                    <div id="shieldStatusContainer" style="margin-bottom: 12px;"></div>
+                    <p style="margin-bottom: 15px; cursor: pointer;" onclick="openInventory()"><strong id="inventoryLabel" style="text-decoration: underline; color: #34d399;">📦 المشتريات:</strong> <span id="inventoryCount">0 عناصر</span></p>
+                    <button class="cert-btn" style="padding: 10px; font-size: 1rem; width: 100%; margin-top: 5px;" onclick="openPomodoroModal()" id="quickTimerBtn">⏱️ بدء مؤقت التركيز المخصص</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><span style="color: var(--primary-neon);" id="motivationTitle">🔥 [ شحنة تحفيز اليوم ]</span></div>
+                    <blockquote id="dailyMotivationText" style="font-style: italic; opacity: 0.95; font-size: 1rem; line-height: 1.6;">
+                        "جاري تحميل طاقة اليوم..."
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="todayOnlyPlannerModal" style="z-index: 10000;">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeTodayOnlyPlannerModal()">&times;</span>
+            <h3 style="margin-bottom: 10px; color: var(--primary-neon);" id="todayOnlyModalTitle">⚡ إضافة مهام لليوم فقط:</h3>
+            <p id="todayOnlyModalSub" style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 20px;">اختر الكمية المطلوبة من المهام لإضافتها فوراً لبروتوكول اليوم:</p>
+            <div id="todayOnlyOptionsContainer"></div>
+            <button class="cert-btn" id="todayOnlySaveBtn" onclick="saveTodayOnlyMissions()" style="margin-top: 15px;">إضافة المهام ⚡</button>
+        </div>
+    </div>
+
+    <div class="modal" id="addFromWeeklyModal" style="z-index: 10000;">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-modal" onclick="closeAddFromWeeklyModal()">&times;</span>
+            <h3 style="color: var(--primary-neon); margin: 0; margin-bottom: 15px;">➕ إضافة مهمة لليوم من جدول الأسبوع:</h3>
+            <div id="addFromWeeklyListContainer"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="pomodoroModal" style="z-index: 10000;">
+        <div class="modal-content" style="max-width: 700px; text-align: center;">
+            <span class="close-modal" onclick="hidePomodoroModalScreen()">&times;</span>
+            <h2 id="pomodoroModalTitle" style="color: var(--primary-neon); font-weight: 800; margin-bottom: 10px;">⏱️ مركز عمليات التركيز</h2>
+            <p id="pomodoroModalSubtitle" style="font-size: 0.95rem; opacity: 0.8; margin-bottom: 20px;">اختر المحطة أو حدد وقت التركيز السريع:</p>
+            <div id="routesContainer" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 25px;"></div>
+            <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 25px;">
+                <label id="customTimeLabel" style="display: block; font-weight: bold; color: var(--primary-neon); margin-bottom: 8px;">⚡ أو حدد وقت التركيز السريع (بالدقائق):</label>
+                <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                    <input type="number" id="customMinutesInput" class="mission-quantity-input" value="25" min="1" max="300" style="width: 100px;">
+                    <button class="add-qty-btn" id="customTimeStartBtn" onclick="startCustomTimeSession()">بدء جلسة الوقت المخصص 🚀</button>
+                </div>
+            </div>
+            <div id="timerActiveArea" style="display: none; background: var(--card-bg); border: 2px solid var(--primary-neon); padding: 30px; border-radius: 16px; box-shadow: 0 0 25px var(--neon-glow);">
+                <h3 id="activeRouteName" style="color: var(--primary-neon); margin-bottom: 10px; font-size: 1.3rem;">جاري العمل...</h3>
+                <div id="timerDisplay" style="font-size: 4rem; font-weight: 800; font-family: monospace; color: var(--text-color); text-shadow: 0 0 20px var(--primary-neon); margin: 15px 0;">25:00</div>
+                <div style="display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
+                    <button class="cert-btn" id="pauseTimerBtn" style="width: auto; padding: 10px 20px; margin: 0; background: #f59e0b; color: #000; box-shadow: 0 0 10px rgba(245,158,11,0.5);" onclick="togglePauseTimer()">إيقاف مؤقت ⏸️</button>
+                    <button class="cert-btn" id="stopTimerBtn" style="width: auto; padding: 10px 20px; margin: 0; background: #ef4444; color: #fff; box-shadow: 0 0 10px rgba(239,68,68,0.5);" onclick="stopTimer()">إلغاء العملية 🛑</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="timerAlertModal" style="background: rgba(3, 7, 18, 0.9); z-index: 12000;">
+        <div class="modal-content" style="text-align: center; border: 3px solid var(--primary-neon); max-width: 500px;">
+            <div style="font-size: 3.5rem; margin-bottom: 15px;" id="alertModalIcon">🎉</div>
+            <h2 id="alertModalTitle" style="color: var(--primary-neon); margin-bottom: 10px; font-weight: 800;">انتهى وقت التركيز بنجاح!</h2>
+            <p id="alertModalDesc" style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; opacity: 0.9;">أتممت الجلسة بنجاح وتمت إضافة مكافأة النقاط إلى رصيدك.</p>
+            <button class="cert-btn" id="alertModalBtn" onclick="closeAlertModal()" style="width: 100%;">استمرار وتحديث النظام 🚀</button>
+        </div>
+    </div>
+
+    <div class="modal" id="weeklyPlannerModal" style="z-index: 10000;">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeWeeklyPlanner()">&times;</span>
+            <h3 style="margin-bottom: 10px; color: var(--primary-neon);" id="weeklyPlannerModalTitle">📅 تخطيط مهام الأسبوع المرن:</h3>
+            <div id="weeklyPlannerOptionsContainer"></div>
+            <button class="cert-btn" id="weeklySaveBtn" onclick="saveWeeklyPlannerSchedule()" style="margin-top: 15px;">حفظ جدول الأسبوع وتوزيعه وإنشاء الخطة ⚡</button>
+        </div>
+    </div>
+
+    <div class="modal" id="deleteWeeklyMissionCardModal" style="z-index: 12000;">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeDeleteWeeklyMissionCardModal()">&times;</span>
+            <h3 style="margin-bottom: 10px; color: #ef4444;">🗑️ إلغاء مهمة من مهام الأسبوع</h3>
+            <div id="deleteWeeklyMissionsCardList"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="inventoryModal" style="z-index: 10000;">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeInventory()">&times;</span>
+            <h3 id="invModalTitle" style="margin-bottom: 15px; color: var(--primary-neon);">📦 حقيبة مشترياتي</h3>
+            <div id="inventoryItemsContainer"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal" style="z-index: 10000;">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleSettings()">&times;</span>
+            <h3 id="settingsTitle" style="margin-bottom: 15px; color: var(--primary-neon);">⚙️ إعدادات النظام</h3>
+            
+            <div class="settings-accordion-item">
+                <div class="settings-accordion-header" onclick="toggleAccordion('prefSecContent')">
+                    <span>👤 التفضيلات الشخصية والنظام الدراسي</span>
+                    <span>▼</span>
+                </div>
+                <div class="settings-accordion-content" id="prefSecContent">
+                    <div class="form-group">
+                        <label>🎓 النظام الدراسي:</label>
+                        <select id="editSystemType" onchange="updateProfileData()">
+                            <option value="qodrat">القدرات العامة ⚡</option>
+                            <option value="school">المدرسة (المناهج) 🏫</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="setGenderLabel">👤 الجنس:</label>
+                        <select id="editGender" onchange="updateProfileData()">
+                            <option value="ذكر" id="optMale">ذكر</option>
+                            <option value="أنثى" id="optFemale">أنثى</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label id="setInterestLabel">🎯 الاهتمام الأساسي:</label>
+                        <select id="editInterest" onchange="updateProfileData()">
+                            <option value="طيران" id="optAviation">طيران ✈️</option>
+                            <option value="برمجة" id="optCoding">برمجة 💻</option>
+                            <option value="هندسة" id="optEngineering">هندسة 🏗️</option>
+                            <option value="طب" id="optMedicine">طب 🩺</option>
+                            <option value="لغات" id="optLanguages">لغات 🗣️</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-accordion-item">
+                <div class="settings-accordion-header" onclick="toggleAccordion('colorSecContent')">
+                    <span>🎨 تخصيص ألوان الواجهة والكروت</span>
+                    <span>▼</span>
+                </div>
+                <div class="settings-accordion-content" id="colorSecContent">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <p id="colorCustomTitle" style="font-weight: bold; margin: 0;">تخصيص الألوان:</p>
+                        <button class="cert-btn" id="resetColorsBtn" style="padding: 5px 15px; font-size: 0.85rem; margin: 0; width: auto; background: #374151; color: #fff; border: 1px solid var(--primary-neon);" onclick="resetToOriginalColors()">🔄 الألوان الأصلية</button>
+                    </div>
+                    <div class="color-picker-group">
+                        <span id="col1Text">🎨 لون نيون الأزرار والحدود</span>
+                        <input type="color" id="primaryColorPicker" oninput="handleColorPickerInput('primary', this.value)">
+                    </div>
+                    <div class="color-picker-group">
+                        <span id="col2Text">🖥️ خلفية الموقع</span>
+                        <input type="color" id="bgColorPicker" oninput="handleColorPickerInput('bg', this.value)">
+                    </div>
+                    <div class="color-picker-group">
+                        <span id="cardColText">📦 لون خلفية الكروت</span>
+                        <input type="color" id="cardColorPicker" oninput="handleColorPickerInput('cardBg', this.value)">
+                    </div>
+                    <div class="color-picker-group">
+                        <span id="col3Text">💬 النصوص</span>
+                        <input type="color" id="textColorPicker" oninput="handleColorPickerInput('text', this.value)">
+                    </div>
+                    <div class="color-picker-group" style="margin-bottom: 0;">
+                        <span id="col4Text">🖱️ سهم الماوس النيوني</span>
+                        <input type="color" id="cursorColorPicker" oninput="handleColorPickerInput('cursor', this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-accordion-item">
+                <div class="settings-accordion-header" onclick="toggleAccordion('plansSecContent')">
+                    <span>📅 خطط الأسبوع المحفوظة</span>
+                    <span>▼</span>
+                </div>
+                <div class="settings-accordion-content" id="plansSecContent">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: bold; color: var(--primary-neon);" id="savedPlansHeading">الخطط المحفوظة:</span>
+                        <button onclick="clearAllWeeklyPlans()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">🗑️ حذف الكل</button>
+                    </div>
+                    <div id="savedPlansList" style="font-size: 0.9rem; opacity: 0.8;">لا توجد خطط محفوظة.</div>
+                </div>
+            </div>
+
+            <div class="settings-accordion-item">
+                <div class="settings-accordion-header" onclick="toggleAccordion('certsSecContent')">
+                    <span>📜 معرض شهادات الإنجاز</span>
+                    <span>▼</span>
+                </div>
+                <div class="settings-accordion-content" id="certsSecContent">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: bold; color: gold;" id="savedCertsHeading">الشهادات المفتوحة:</span>
+                        <button onclick="clearAllCertificates()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">🗑️ حذف الكل</button>
+                    </div>
+                    <div id="savedCertificatesList" style="font-size: 0.9rem; opacity: 0.8;">لا توجد شهادات محفوظة.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="shopModal" style="z-index: 10000;">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleShop()">&times;</span>
+            <h3 id="shopTitle" style="margin-bottom: 20px; color: var(--primary-neon);">🛒 متجر مكافآت الصلابة</h3>
+            
+            <div class="mission-option-card" style="margin-bottom: 12px;">
+                <div class="mission-option-top">
+                    <div class="mission-option-info">
+                        <span style="font-size: 1.3rem;">🛡️</span>
+                        <div>
+                            <strong>درع تجميد اليوم (Stress Shield - 24h)</strong>
+                            <div style="font-size: 0.8rem; color: var(--primary-neon);">200 EXP</div>
+                        </div>
+                    </div>
+                    <button class="add-qty-btn shopBuyBtn" onclick="buyShopItem('shield', 200)">شراء 🛒</button>
+                </div>
+            </div>
+
+            <div class="mission-option-card" style="margin-bottom: 12px;">
+                <div class="mission-option-top">
+                    <div class="mission-option-info">
+                        <span style="font-size: 1.3rem;">🎨</span>
+                        <div>
+                            <strong>كارت تخصيص الألوان (Theme Customizer)</strong>
+                            <div style="font-size: 0.8rem; color: var(--primary-neon);">200 EXP</div>
+                        </div>
+                    </div>
+                    <button class="add-qty-btn shopBuyBtn" onclick="buyShopItem('color_card', 200)">شراء 🛒</button>
+                </div>
+            </div>
+
+            <div class="mission-option-card" style="margin-bottom: 12px;">
+                <div class="mission-option-top">
+                    <div class="mission-option-info">
+                        <span style="font-size: 1.3rem;">🗑️</span>
+                        <div>
+                            <strong>إلغاء مهمة من مهام الاسبوع</strong>
+                            <div style="font-size: 0.8rem; color: var(--primary-neon);">50 EXP</div>
+                        </div>
+                    </div>
+                    <button class="add-qty-btn shopBuyBtn" onclick="buyShopItem('clear_card', 50)">شراء 🛒</button>
+                </div>
+            </div>
+
+            <div class="mission-option-card" style="margin-bottom: 12px;">
+                <div class="mission-option-top">
+                    <div class="mission-option-info">
+                        <span style="font-size: 1.3rem;">☕</span>
+                        <div>
+                            <strong>كوب قهوة فاخر</strong>
+                            <div style="font-size: 0.8rem; color: var(--primary-neon);">40 EXP</div>
+                        </div>
+                    </div>
+                    <button class="add-qty-btn shopBuyBtn" onclick="buyShopItem('coffee', 40)">شراء 🛒</button>
+                </div>
+            </div>
+
+            <div class="mission-option-card" style="margin-bottom: 12px;">
+                <div class="mission-option-top">
+                    <div class="mission-option-info">
+                        <span style="font-size: 1.3rem;">🚶‍♂️</span>
+                        <div>
+                            <strong>تصريح التمشي لمدة ٣٠د</strong>
+                            <div style="font-size: 0.8rem; color: var(--primary-neon);">40 EXP</div>
+                        </div>
+                    </div>
+                    <button class="add-qty-btn shopBuyBtn" onclick="buyShopItem('walk', 40)">شراء 🛒</button>
+                </div>
+            </div>
+
+            <div class="mission-option-card" style="margin-bottom: 12px;">
+                <div class="mission-option-top">
+                    <div class="mission-option-info">
+                        <span style="font-size: 1.3rem;">⏳</span>
+                        <div>
+                            <strong>ساعة فراغ ليك</strong>
+                            <div style="font-size: 0.8rem; color: var(--primary-neon);">40 EXP</div>
+                        </div>
+                    </div>
+                    <button class="add-qty-btn shopBuyBtn" onclick="buyShopItem('free_hour', 40)">شراء 🛒</button>
+                </div>
+            </div>
+
+            <div class="mission-option-card">
+                <div class="mission-option-top">
+                    <div class="mission-option-info">
+                        <span style="font-size: 1.3rem;" id="shopInterestCardIcon">🩺</span>
+                        <div>
+                            <strong id="shopInterestCardTitle">ساعة تعلم طب</strong>
+                            <div style="font-size: 0.8rem; color: var(--primary-neon);">60 EXP</div>
+                        </div>
+                    </div>
+                    <button class="add-qty-btn shopBuyBtn" onclick="buyShopItem('interest_study', 60)">شراء 🛒</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="planModal" style="background: rgba(3, 7, 18, 0.95); z-index: 25000;">
+        <div class="modal-content" id="planArea" style="max-width: 800px; text-align: inherit; padding: 40px; border-radius: 20px;">
+            <span class="close-modal" onclick="closePlanModal()" style="color: var(--primary-neon);">&times;</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 10px;" id="planHeaderIcon">📅✨</div>
+                <h2 style="color: var(--primary-neon); font-size: 2rem; font-weight: 800;" id="planMainTitle">خطة مهام الأسبوع الموزعة</h2>
+                <p style="font-size: 1.05rem; opacity: 0.8; color: var(--text-color);" id="planSubtitle">جدول زمني متكامل لإنجاز أهداف قطاع التميز</p>
+            </div>
+            <div id="planDaysContainer" style="margin-bottom: 25px;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--primary-neon); font-size: 1rem; border-top: 2px dashed var(--border-color); padding-top: 15px;">
+                <span id="planUserSign">البطل: --</span>
+                <span id="planDateSpan">التاريخ: --</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="certificateModal" style="background: rgba(3, 7, 18, 0.95); z-index: 25000;">
+        <div class="modal-content" id="certificateArea" style="max-width: 800px; text-align: center; padding: 40px; border-radius: 20px;">
+            <span class="close-modal" onclick="closeCertificate()" style="color: gold;">&times;</span>
+            <div id="certHeaderBadge" style="font-size: 3rem; margin-bottom: 15px;">🩺📜</div>
+            <h2 style="color: var(--primary-neon); font-size: 2.2rem; margin-bottom: 5px; font-weight: 800;" id="certMainTitle">شهادة اعتماد وتفوق أسبوعي</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 25px; color: var(--text-color); font-weight: 600;" id="certWeekSubtitle">إنجاز الأسبوع - قطاع التميز</p>
+            <div style="border-top: 2px dashed var(--border-color); border-bottom: 2px dashed var(--border-color); padding: 25px 0; margin-bottom: 25px;">
+                <p style="font-size: 1.1rem; margin-bottom: 12px; opacity: 0.9;" id="certAwardText">تُمنح هذه الشهادة بكل فخر وإجلال إلى البطل(ة):</p>
+                <h1 style="display: inline-block; padding: 8px 30px; font-size: 2.3rem; margin-bottom: 15px; color: var(--primary-neon); background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid var(--primary-neon);" id="certHolder">--</h1>
+                <p style="font-size: 1.05rem; line-height: 1.8; opacity: 0.95; max-width: 650px; margin: 0 auto;" id="certBodyDesc">لقد أظهرت كفاءة استثنائية وانضباطاً فريداً في اجتياز كافة مهام هذا الأسبوع ضمن منصة <strong>FORTITUDE</strong> بنجاح باهر.</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--primary-neon); font-size: 1.05rem; margin-top: 20px;">
+                <span id="certSignText">التوقيع: قيادة عمليات منصة FORTITUDE</span>
+                <span id="certDateSpan">التاريخ: --</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userData = {
+            systemType: 'qodrat',
+            gender: 'ذكر',
+            interest: 'طيران',
+            exp: 0,
+            streak: 1,
+            inventory: [],
+            weeklySchedule: [
+                { name: 'البنك الكمي (50 سؤال) (1)', exp: 10, completed: false },
+                { name: 'البنك الكمي (50 سؤال) (2)', exp: 10, completed: false },
+                { name: 'القسم الكمي (تأسيس ورقة) (1)', exp: 2, completed: false },
+                { name: 'القسم اللفظي (قطع واستيعاب المقروء) (1)', exp: 2, completed: false }
+            ],
+            todayIndices: [0, 1, 2, 3],
+            lastActiveDate: new Date().toISOString().slice(0, 10),
+            currentWeekNumber: 1,
+            weeklyPlans: [],
+            customColors: { primary: '#10b981', bg: '#0b0f19', cardBg: 'rgba(17, 24, 39, 0.85)', text: '#f3f4f6', cursor: '#10b981' },
+            freeColorChanges: { primary: false, bg: false, cardBg: false, text: false, cursor: false },
+            language: 'ar',
+            theme: 'dark',
+            certificates: [],
+            firstLaunchDone: false,
+            bossDefeatedShown: false,
+            isShieldActive: false,
+            shieldTimestamp: null
+        };
+
+        const todayDateStr = new Date().toISOString().slice(0, 10);
+        let pendingColorChanges = {};
+        let needsColorCard = false;
+
+        const translations = {
+            ar: {
+                siteTitle: "FORTITUDE // Mission Control",
+                dailyProgTitle: "تقدم المهام اليومية",
+                weeklyProgTitle: "تقدم القطاع الأسبوعي",
+                weeklyDesc: "التقدم الإجمالي بناءً على المهام المكتسبة أسبوعياً",
+                openWeeklyPlannerBtn: "📅 تخطيط وإضافة مهام الأسبوع بالكامل",
+                todayProtocolTitle: "عناصر بروتوكول اليوم",
+                clickCompleteText: "انقر للإتمام",
+                addMissionBtnText: "+ إضافة مهمة لليوم من جدول الأسبوع",
+                addTodayOnlyBtnText: "+ إضافة مهمة جديدة لليوم فقط ⚡",
+                clearAllBtnText: "🗑️ مسح مهام اليوم الحالية",
+                systemTypeLabel: "النظام الدراسي:",
+                genderLabel: "الجنس:",
+                interestLabel: "الاهتمام:",
+                streakLabel: "عدد المتتالية في المذاكرة:",
+                inventoryLabel: "📦 المشتريات:",
+                quickTimerBtn: "⏱️ بدء مؤقت التركيز المخصص",
+                motivationTitle: "🔥 [ شحنة تحفيز اليوم ]",
+                pomodoroModalTitle: "⏱️ مركز عمليات التركيز",
+                pomodoroModalSubtitle: "اختر المحطة أو حدد وقت التركيز السريع:",
+                customTimeLabel: "⚡ أو حدد وقت التركيز السريع (بالدقائق):",
+                customTimeStartBtn: "بدء جلسة الوقت المخصص 🚀",
+                pauseTimerBtn: "إيقاف مؤقت ⏸️",
+                stopTimerBtn: "إلغاء العملية 🛑",
+                alertModalTitle: "انتهى وقت التركيز بنجاح!",
+                alertModalDesc: "أتممت الجلسة بنجاح وتمت إضافة مكافأة النقاط إلى رصيدك.",
+                alertModalBtn: "استمرار وتحديث النظام 🚀",
+                weeklyPlannerModalTitle: "📅 تخطيط مهام الأسبوع المرن:",
+                weeklySaveBtn: "حفظ جدول الأسبوع وتوزيعه وإنشاء الخطة ⚡",
+                invModalTitle: "📦 حقيبة مشترياتي",
+                invModalDesc: "انقر على أي أداة لاستخدامها:",
+                settingsTitle: "⚙️ إعدادات النظام",
+                setGenderLabel: "👤 الجنس:",
+                optMale: "ذكر", optFemale: "أنثى",
+                setInterestLabel: "🎯 الاهتمام الأساسي:",
+                optAviation: "طيران ✈️", optCoding: "برمجة 💻", optEngineering: "هندسة 🏗️", optMedicine: "طب 🩺", optLanguages: "لغات 🗣️",
+                colorCustomTitle: "تخصيص الألوان:",
+                resetColorsBtn: "🔄 الألوان الأصلية",
+                col1Text: "🎨 لون نيون الأزرار والحدود",
+                col2Text: "🖥️ خلفية الموقع",
+                cardColText: "📦 لون خلفية الكروت",
+                col3Text: "💬 النصوص",
+                col4Text: "🖱️ سهم الماوس النيوني",
+                savedPlansHeading: "الخطط المحفوظة:",
+                savedCertsHeading: "الشهادات المفتوحة:",
+                shopTitle: "🛒 متجر مكافآت FORTITUDE",
+                planMainTitle: "خطة مهام الأسبوع الموزعة",
+                planSubtitle: "جدول زمني متكامل لإنجاز أهداف قطاع التميز",
+                certMainTitle: "شهادة اعتماد وتفوق أسبوعي",
+                certWeekSubtitle: "إنجاز الأسبوع - قطاع التميز",
+                certAwardText: "تُمنح هذه الشهادة بكل فخر وإجلال إلى البطل(ة):",
+                certBodyDesc: "لقد أظهرت كفاءة استثنائية وانضباطاً فريداً في اجتياز كافة مهام هذا الأسبوع ضمن منصة <strong>FORTITUDE</strong> بنجاح باهر.",
+                certSignText: "التوقيع: قيادة عمليات منصة FORTITUDE"
+            },
+            en: {
+                siteTitle: "FORTITUDE // Mission Control",
+                dailyProgTitle: "Daily Missions Progress",
+                weeklyProgTitle: "Weekly Sector Progress",
+                weeklyDesc: "Total progress based on weekly acquired missions",
+                openWeeklyPlannerBtn: "📅 Plan & Add Full Weekly Missions",
+                todayProtocolTitle: "Today Protocol Elements",
+                clickCompleteText: "Click to Complete",
+                addMissionBtnText: "+ Add Weekly Mission to Today",
+                addTodayOnlyBtnText: "+ Add New Mission for Today Only ⚡",
+                clearAllBtnText: "🗑️ Clear Today Missions",
+                systemTypeLabel: "Study System:",
+                genderLabel: "Gender:",
+                interestLabel: "Interest:",
+                streakLabel: "Study Streak:",
+                inventoryLabel: "📦 Inventory:",
+                quickTimerBtn: "⏱️ Start Custom Focus Timer",
+                motivationTitle: "🔥 [ Today's Motivation Charge ]",
+                pomodoroModalTitle: "⏱️ Focus Operations Center",
+                pomodoroModalSubtitle: "Choose a route or set quick focus time:",
+                customTimeLabel: "⚡ Or set quick focus time (minutes):",
+                customTimeStartBtn: "Start Custom Session 🚀",
+                pauseTimerBtn: "Pause ⏸️",
+                stopTimerBtn: "Stop Operation 🛑",
+                alertModalTitle: "Focus Time Finished Successfully!",
+                alertModalDesc: "You completed the session successfully and points reward was added.",
+                alertModalBtn: "Continue & Update System 🚀",
+                weeklyPlannerModalTitle: "📅 Flexible Weekly Mission Planner:",
+                weeklySaveBtn: "Save Weekly Schedule & Generate Plan ⚡",
+                invModalTitle: "📦 My Inventory",
+                invModalDesc: "Click any item to use it:",
+                settingsTitle: "⚙️ System Settings",
+                setGenderLabel: "👤 Gender:",
+                optMale: "Male", optFemale: "Female",
+                setInterestLabel: "🎯 Core Interest:",
+                optAviation: "Aviation ✈️", optCoding: "Coding 💻", optEngineering: "Engineering 🏗️", optMedicine: "Medicine 🩺", optLanguages: "Languages 🗣️",
+                colorCustomTitle: "Customize Colors:",
+                resetColorsBtn: "🔄 Original Colors",
+                col1Text: "🎨 Neon Buttons & Borders Color",
+                col2Text: "🖥️ Site Background",
+                cardColText: "📦 Cards Background Color",
+                col3Text: "💬 Text Color",
+                col4Text: "🖱️ Neon Mouse Cursor",
+                savedPlansHeading: "Saved Plans:",
+                savedCertsHeading: "Unlocked Certificates:",
+                shopTitle: "🛒 Fortitude Rewards Shop",
+                planMainTitle: "Distributed Weekly Mission Plan",
+                planSubtitle: "Integrated timeline to achieve excellence sector goals",
+                certMainTitle: "Weekly Excellence & Approval Certificate",
+                certWeekSubtitle: "Weekly Achievement - Excellence Sector",
+                certAwardText: "This certificate is proudly awarded to Hero:",
+                certBodyDesc: "You have shown exceptional competence and unique discipline in passing all tasks of this week within <strong>FORTITUDE</strong> platform successfully.",
+                certSignText: "Signature: Fortitude Operations Command"
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setupCursor();
+            loadLocalUserData();
+        });
+
+        function loadLocalUserData() {
+            const saved = localStorage.getItem('fortitude_local_user');
+            if (saved) {
+                try {
+                    userData = JSON.parse(saved);
+                } catch(e) {}
+            }
+
+            if (!userData.firstLaunchDone) {
+                document.getElementById('onboardingModal').style.display = 'flex';
+                applyTranslations();
+            } else {
+                document.getElementById('onboardingModal').style.display = 'none';
+                document.getElementById('mainContainerApp').style.display = 'block';
+                runAppInitialization();
+            }
+        }
+
+        function saveLocalUserData() {
+            localStorage.setItem('fortitude_local_user', JSON.stringify(userData));
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileDropdownMenu');
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function applyTranslations() {
+            const lang = userData ? userData.language : 'ar';
+            const t = translations[lang] || translations['ar'];
+
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+            document.getElementById('htmlRoot').setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+
+            for (let key in t) {
+                const el = document.getElementById(key);
+                if (el) {
+                    el.innerHTML = t[key];
+                }
+            }
+            updateShopDynamicInterestsText();
+        }
+
+        function selectSystemCard(sysType) {
+            userData.systemType = sysType;
+            document.querySelectorAll('#onboardingModal .selection-grid .select-card').forEach(c => {
+                if(c.id.startsWith('systemCard_')) c.classList.remove('selected');
+            });
+            document.getElementById('systemCard_' + sysType).classList.add('selected');
+        }
+
+        function selectGenderCard(gender) {
+            userData.gender = gender;
+            document.querySelectorAll('#onboardingModal .selection-grid').forEach((grid, idx) => {
+                if(idx === 1) {
+                    grid.querySelectorAll('.select-card').forEach(c => c.classList.remove('selected'));
+                }
+            });
+            document.getElementById('genderCard_' + gender).classList.add('selected');
+        }
+
+        function selectInterestCard(interest) {
+            userData.interest = interest;
+            document.querySelectorAll('.selection-grid-5 .select-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('interestCard_' + interest).classList.add('selected');
+            updateShopDynamicInterestsText();
+        }
+
+        function saveOnboardingData() {
+            userData.firstLaunchDone = true;
+            applySystemDefaultSchedule();
+            saveLocalUserData();
+            document.getElementById('onboardingModal').style.display = 'none';
+            document.getElementById('mainContainerApp').style.display = 'block';
+            runAppInitialization();
+        }
+
+        function applySystemDefaultSchedule() {
+            if (userData.systemType === 'school') {
+                userData.weeklySchedule = [
+                    { name: 'دراسات (مذاكرة دروس)', exp: 5, completed: false },
+                    { name: 'علوم (مذاكرة دروس)', exp: 5, completed: false },
+                    { name: 'رياضة (حل أسئلة)', exp: 10, completed: false },
+                    { name: 'إنجليزي (مذاكرة دروس)', exp: 5, completed: false },
+                    { name: 'عربي (مذاكرة دروس)', exp: 5, completed: false }
+                ];
+            } else {
+                userData.weeklySchedule = [
+                    { name: 'البنك الكمي (50 سؤال) (1)', exp: 10, completed: false },
+                    { name: 'البنك الكمي (50 سؤال) (2)', exp: 10, completed: false },
+                    { name: 'القسم الكمي (تأسيس ورقة) (1)', exp: 2, completed: false },
+                    { name: 'القسم اللفظي (قطع واستيعاب المقروء) (1)', exp: 2, completed: false }
+                ];
+            }
+            userData.todayIndices = userData.weeklySchedule.map((_, idx) => idx);
+        }
+
+        function runAppInitialization() {
+            applyCustomColors();
+            applyInterestBranding();
+            applyTranslations();
+            checkStreakAndDayTransition(userData);
+            initDashboard();
+        }
+
+        function initDashboard() {
+            document.getElementById('editSystemType').value = userData.systemType || 'qodrat';
+            document.getElementById('editGender').value = userData.gender;
+            document.getElementById('editInterest').value = userData.interest;
+
+            renderMissions();
+            updateStats();
+            loadDailyMotivation();
+            applyInterestBranding();
+            updateShopDynamicInterestsText();
+        }
+
+        function updateShopDynamicInterestsText() {
+            if (!userData) return;
+            const interest = userData.interest || 'طيران';
+            const interestNames = { طيران: 'طيران', طب: 'طب', برمجة: 'برمجة', هندسة: 'هندسة', لغات: 'لغات' };
+            const interestIcons = { طيران: '✈️', طب: '🩺', برمجة: '💻', هندسة: '🏗️', لغات: '🗣️' };
+            
+            const titleEl = document.getElementById('shopInterestCardTitle');
+            const iconEl = document.getElementById('shopInterestCardIcon');
+            if (titleEl) {
+                titleEl.textContent = userData.language === 'en' ? `Study Hour (${interestNames[interest]})` : `ساعة تعلم ${interestNames[interest]}`;
+            }
+            if (iconEl) {
+                iconEl.textContent = interestIcons[interest] || '📖';
+            }
+        }
+
+        const interestBrandingConfigs = {
+            طيران: {
+                maleTitle: { ar: "حالة الطيار البطل", en: "Hero Pilot Status" },
+                femaleTitle: { ar: "حالة الطيارة البطلة", en: "Hero Female Pilot Status" },
+                certBadge: "✈️📜",
+                maleCert: { ar: "الكابتن البارع", en: "Master Captain" },
+                femaleCert: { ar: "الكابتن البارعة", en: "Master Captain" },
+                sectorName: { ar: "قطاع الطيران والملاحة", en: "Aviation & Navigation Sector" }
+            },
+            طب: {
+                maleTitle: { ar: "حالة الطبيب البطل", en: "Hero Doctor Status" },
+                femaleTitle: { ar: "حالة الطبيبة البطلة", en: "Hero Female Doctor Status" },
+                certBadge: "🩺📜",
+                maleCert: { ar: "الدكتور البارع", en: "Master Doctor" },
+                femaleCert: { ar: "الدكتورة البارعة", en: "Master Doctor" },
+                sectorName: { ar: "قطاع الطب البشري", en: "Human Medicine Sector" }
+            },
+            برمجة: {
+                maleTitle: { ar: "حالة المهندس البرمجي البطل", en: "Hero Software Engineer Status" },
+                femaleTitle: { ar: "حالة المهندسة البرمجية البطلة", en: "Hero Female Software Engineer Status" },
+                certBadge: "💻📜",
+                maleCert: { ar: "المهندس البرمجي البارع", en: "Master Software Engineer" },
+                femaleCert: { ar: "المهندسة البرمجية البارعة", en: "Master Software Engineer" },
+                sectorName: { ar: "قطاع هندسة البرمجيات", en: "Software Engineering Sector" }
+            },
+            هندسة: {
+                maleTitle: { ar: "حالة المهندس الإنشائي البطل", en: "Hero Structural Engineer Status" },
+                femaleTitle: { ar: "حالة المهندسة الإنشاءية البطلة", en: "Hero Female Structural Engineer Status" },
+                certBadge: "🏗️📜",
+                maleCert: { ar: "المهندس الاستشاري البارع", en: "Master Consulting Engineer" },
+                femaleCert: { ar: "المهندسة الاستشارية البارعة", en: "Master Consulting Engineer" },
+                sectorName: { ar: "قطاع الهندسة والإنشاءات", en: "Engineering & Construction Sector" }
+            },
+            لغات: {
+                maleTitle: { ar: "حالة اللغوي البطل", en: "Hero Linguist Status" },
+                femaleTitle: { ar: "حالة اللغوية البطلة", en: "Hero Female Linguist Status" },
+                certBadge: "🗣️📜",
+                maleCert: { ar: "الخبير اللغوي البارع", en: "Master Linguist" },
+                femaleCert: { ar: "الخبيرة اللغوية البارعة", en: "Master Linguist" },
+                sectorName: { ar: "قطاع اللغات واللسانيات", en: "Languages & Linguistics Sector" }
+            }
+        };
+
+        function applyInterestBranding() {
+            const interest = userData.interest || 'طيران';
+            const gender = userData.gender || 'ذكر';
+            const lang = userData.language || 'ar';
+            const config = interestBrandingConfigs[interest] || interestBrandingConfigs['طيران'];
+
+            const titleText = (gender === 'أنثى') ? config.femaleTitle[lang] : config.maleTitle[lang];
+            const iconPrefix = interest === 'طيران' ? '✈️ ' : interest === 'طب' ? '🩺 ' : interest === 'برمجة' ? '💻 ' : interest === 'لغات' ? '🗣️ ' : '🏗️ ';
+            document.getElementById('dynamicStatusTitle').textContent = iconPrefix + titleText;
+            document.getElementById('displayGender').textContent = gender === 'ذكر' ? (lang === 'ar' ? 'ذكر' : 'Male') : (lang === 'ar' ? 'أنثى' : 'Female');
+            document.getElementById('displaySystemType').textContent = userData.systemType === 'school' ? (lang === 'ar' ? 'المدرسة (المناهج) 🏫' : 'School System') : (lang === 'ar' ? 'القدرات العامة ⚡' : 'Qodrat System');
+            document.getElementById('displayInterest').textContent = interest === 'طيران' ? (lang === 'ar' ? 'طيران' : 'Aviation') :
+                                                                  interest === 'برمجة' ? (lang === 'ar' ? 'برمجة' : 'Coding') :
+                                                                  interest === 'هندسة' ? (lang === 'ar' ? 'هندسة' : 'Engineering') :
+                                                                  interest === 'لغات' ? (lang === 'ar' ? 'لغات' : 'Languages') : (lang === 'ar' ? 'طب' : 'Medicine');
+        }
+
+        const motivations = {
+            طيران: {
+                ذكر: { ar: ["«الارتفاع الحقيقي لا يُقاس بالأقدام، بل بمدى صلابة تركيزك في مسارك الدراسي!»"], en: ["«True altitude is measured by focus rigidity!»"] },
+                أنثى: { ar: ["«كابتن الطائرة البارعة لا تهاب العواصف!»"], en: ["«Master pilot fears no storm!»"] }
+            },
+            برمجة: {
+                ذكر: { ar: ["«Debugging عقلِك من الأخطاء والتردد هو أول خوارزمية!»"], en: ["«Debugging your mind from hesitation is the first algorithm!»"] },
+                أنثى: { ar: ["«برمجي يومك بإنتاجية عالية!»"], en: ["«Program your day with high productivity!»"] }
+            },
+            هندسة: {
+                ذكر: { ar: ["«أساسات الهياكل القوية تبدأ من انضباطك اليومي.»"], en: ["«Strong structural foundations start with daily discipline.»"] },
+                أنثى: { ar: ["«التصميم الهندسي المتكامل يتطلب صبراً ومثابرة.»"], en: ["«Integrated engineering design requires patience.»"] }
+            },
+            طب: {
+                ذكر: { ar: ["«دقة الجراح تبدأ من دقتك في حل المواد الدراسية اليوم.»"], en: ["«Surgeon precision starts with daily study.»"] },
+                أنثى: { ar: ["«الطبيبة المتميزة تجمع بين رحمة القلب وصلابة العقل.»"], en: ["«Distinguished doctor combines mercy and mental toughness.»"] }
+            },
+            لغات: {
+                ذكر: { ar: ["«إتقان اللغات يفتح لك أبواب العالم الجديد بصلابة!»"], en: ["«Mastering languages opens doors to new worlds!»"] },
+                أنثى: { ar: ["«اللسان البارع يبني جسور التواصل ببراعة.»"], en: ["«Skilful tongue builds communication bridges.»"] }
+            }
+        };
+
+        function loadDailyMotivation() {
+            const track = userData.interest || 'طيران';
+            const gen = userData.gender || 'ذكر';
+            const lang = userData.language || 'ar';
+            const list = motivations[track]?.[gen]?.[lang] || motivations['طيران']['ذكر']['ar'];
+            const randomMsg = list[Math.floor(Math.random() * list.length)];
+            document.getElementById('dailyMotivationText').textContent = randomMsg;
+        }
+
+        function updateStats() {
+            document.getElementById('expDisplay').textContent = `EXP ${userData.exp}`;
+            const lang = userData.language || 'ar';
+            document.getElementById('currentStreak').textContent = lang === 'ar' ? `اليوم ${userData.streak} 🔥` : `Day ${userData.streak} 🔥`;
+            document.getElementById('inventoryCount').textContent = `${userData.inventory.length} ${lang === 'ar' ? 'عناصر' : 'items'}`;
+
+            const shieldContainer = document.getElementById('shieldStatusContainer');
+            const overlay = document.getElementById('glacierShieldOverlay');
+
+            if (userData.isShieldActive) {
+                shieldContainer.innerHTML = `
+                    <div id="shieldActiveBox" style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; padding: 10px 14px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                        <span>${lang === 'ar' ? '🛡️ درع تجميد اليوم (محمي اليوم)' : '🛡️ Stress Shield Active (Protected Today)'}</span>
+                        <button onclick="requestBreakShield()" style="background: #38bdf8; border: none; color: #030712; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">${lang === 'ar' ? 'كسر التجميد ⚡' : 'Break Shield ⚡'}</button>
+                    </div>
+                `;
+                overlay.style.display = 'flex';
+            } else {
+                shieldContainer.innerHTML = '';
+                overlay.style.display = 'none';
+            }
+
+            if (!userData.todayIndices || !Array.isArray(userData.todayIndices)) {
+                userData.todayIndices = userData.weeklySchedule.map((_, idx) => idx);
+            }
+
+            let completedTodayCount = 0;
+            userData.todayIndices.forEach(idx => {
+                if (userData.weeklySchedule[idx] && userData.weeklySchedule[idx].completed) {
+                    completedTodayCount++;
+                }
+            });
+            const totalToday = userData.todayIndices.length;
+            const dailyPercent = totalToday > 0 ? Math.round((completedTodayCount / totalToday) * 100) : 0;
+
+            const totalWeekly = userData.weeklySchedule.length;
+            const completedWeekly = userData.weeklySchedule.filter(w => w.completed).length;
+            const weeklyPercent = totalWeekly > 0 ? Math.round((completedWeekly / totalWeekly) * 100) : 0;
+
+            document.getElementById('dailyPercentage').textContent = `${dailyPercent}%`;
+            document.getElementById('dailyStatusText').textContent = lang === 'ar' ? `${completedTodayCount} من ${totalToday} مهام مكتملة` : `${completedTodayCount} of ${totalToday} missions completed`;
+            document.getElementById('dailyProgressBar').style.width = `${dailyPercent}%`;
+
+            document.getElementById('weeklyPercentage').textContent = `${weeklyPercent}%`;
+            document.getElementById('weeklyProgressBar').style.width = `${weeklyPercent}%`;
+
+            if (totalToday > 0 && dailyPercent === 100) {
+                document.getElementById('dailyRewardSymbol').textContent = lang === 'ar' ? '🎉 تهانينا! أتممت كافة مهام اليوم بنجاح!' : '🎉 Congratulations! Completed all today missions!';
+                if (!userData.dailyStarShownToday || userData.dailyStarShownDate !== todayDateStr) {
+                    userData.dailyStarShownToday = true;
+                    userData.dailyStarShownDate = todayDateStr;
+                    document.getElementById('dailyStarOverlay').style.display = 'flex';
+                    saveLocalUserData();
+                }
+            } else {
+                document.getElementById('dailyRewardSymbol').textContent = '';
+                userData.dailyStarShownToday = false;
+            }
+
+            if (totalWeekly > 0 && weeklyPercent === 100) {
+                if (!userData.bossDefeatedShown) {
+                    userData.bossDefeatedShown = true;
+                    generateAndStoreCertificate();
+                    openCertificate();
+                }
+            }
+
+            saveLocalUserData();
+        }
+
+        function closeDailyStarOverlay() {
+            document.getElementById('dailyStarOverlay').style.display = 'none';
+        }
+
+        function requestBreakShield() {
+            const container = document.getElementById('glacierContainer');
+            const btn = document.getElementById('breakShieldBtn');
+            if (btn) btn.style.display = 'none';
+
+            if (container) {
+                container.classList.add('cracking');
+            }
+
+            setTimeout(() => {
+                if (container) {
+                    container.classList.remove('cracking');
+                    container.classList.add('exploding');
+                }
+            }, 800);
+
+            setTimeout(() => {
+                userData.isShieldActive = false;
+                userData.shieldTimestamp = null;
+                if (container) container.classList.remove('exploding');
+                if (btn) btn.style.display = 'inline-block';
+                document.getElementById('glacierShieldOverlay').style.display = 'none';
+                saveLocalUserData();
+                updateStats();
+            }, 1450);
+        }
+
+        function renderMissions() {
+            const container = document.getElementById('missionsContainer');
+            container.innerHTML = '';
+            const lang = userData.language || 'ar';
+
+            if (!userData.todayIndices || userData.todayIndices.length === 0) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.style.cssText = "text-align: center; padding: 20px; opacity: 0.6; font-size: 0.95rem;";
+                emptyDiv.textContent = lang === 'ar' ? 'لا توجد مهام حالية في بروتوكول اليوم. انقر أدناه للإضافة.' : 'No missions for today. Click below to add.';
+                container.appendChild(emptyDiv);
+                updateStats();
+                return;
+            }
+
+            userData.todayIndices.forEach((wIndex) => {
+                const mission = userData.weeklySchedule[wIndex];
+                if (!mission) return;
+
+                const item = document.createElement('div');
+                item.className = 'mission-item';
+                item.style.borderColor = mission.completed ? 'var(--primary-neon)' : 'var(--border-color)';
+                item.style.background = mission.completed ? 'rgba(16, 185, 129, 0.15)' : 'var(--card-bg)';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'mission-info';
+                infoDiv.onclick = () => toggleMission(wIndex);
+
+                const iconSpan = document.createElement('span');
+                iconSpan.style.fontSize = '1.3rem';
+                iconSpan.textContent = mission.completed ? '✅' : '⭕';
+
+                const textContainer = document.createElement('div');
+                const strongTitle = document.createElement('strong');
+                strongTitle.style.textDecoration = mission.completed ? 'line-through' : 'none';
+                strongTitle.style.opacity = mission.completed ? '0.7' : '1';
+                strongTitle.textContent = mission.name;
+
+                const expDiv = document.createElement('div');
+                expDiv.style.cssText = "font-size: 0.8rem; color: var(--primary-neon);";
+                expDiv.textContent = `+${mission.exp} EXP`;
+
+                textContainer.appendChild(strongTitle);
+                textContainer.appendChild(expDiv);
+                infoDiv.appendChild(iconSpan);
+                infoDiv.appendChild(textContainer);
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'mission-actions';
+                const postponeBtn = document.createElement('button');
+                postponeBtn.className = 'delete-mission-btn';
+                postponeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    postponeMissionItem(wIndex);
+                };
+                postponeBtn.title = "تحويل لبكرة تلقائياً";
+                postponeBtn.textContent = "🔄";
+                actionsDiv.appendChild(postponeBtn);
+
+                item.appendChild(infoDiv);
+                item.appendChild(actionsDiv);
+                container.appendChild(item);
+            });
+            updateStats();
+        }
+
+        function toggleMission(weeklyIndex) {
+            const m = userData.weeklySchedule[weeklyIndex];
+            if (!m) return;
+
+            const wasCompleted = m.completed;
+            m.completed = !wasCompleted;
+
+            if (m.completed && !wasCompleted) {
+                userData.exp += m.exp;
+            } else if (!m.completed && wasCompleted) {
+                userData.exp = Math.max(0, userData.exp - m.exp);
+                userData.bossDefeatedShown = false;
+            }
+            saveLocalUserData();
+            renderMissions();
+        }
+
+        function postponeMissionItem(weeklyIndex) {
+            const lang = userData.language || 'ar';
+            const idxInToday = userData.todayIndices.indexOf(weeklyIndex);
+            
+            if (idxInToday !== -1) {
+                userData.todayIndices.splice(idxInToday, 1);
+
+                if (!userData.postponedIndices) userData.postponedIndices = [];
+                if (!userData.postponedIndices.includes(weeklyIndex)) {
+                    userData.postponedIndices.push(weeklyIndex);
+                }
+                
+                saveLocalUserData();
+                renderMissions();
+                alert(lang === 'ar' ? "🔄 تم إزالة المهمة من اليوم وسيتم إضافتها تلقائياً لمهام يومك الجديد غداً!" : "🔄 Mission postponed to tomorrow successfully!");
+            }
+        }
+
+        function clearAllMissions() {
+            const lang = userData.language || 'ar';
+            if (confirm(lang === 'ar' ? "هل أنت متأكد من مسح مهام اليوم الحالية تماماً وتفريغ القائمة؟" : "Are you sure you want to clear all today's missions?")) {
+                userData.todayIndices = [];
+                saveLocalUserData();
+                renderMissions();
+            }
+        }
+
+        function openWeeklyPlanner() {
+            const container = document.getElementById('weeklyPlannerOptionsContainer');
+            container.innerHTML = '';
+            const lang = userData.language || 'ar';
+
+            if (userData.systemType === 'school') {
+                const subjects = [
+                    { key: 'studies', name: 'دراسات', icon: '🌍', exp: 5 },
+                    { key: 'science', name: 'علوم', icon: '🔬', exp: 5 },
+                    { key: 'math', name: 'رياضة', icon: '📐', exp: 10 },
+                    { key: 'english', name: 'إنجليزي', icon: '🗣️', exp: 5 },
+                    { key: 'arabic', name: 'عربي', icon: '📚', exp: 5 }
+                ];
+                subjects.forEach(sub => {
+                    const card = document.createElement('div');
+                    card.className = 'mission-option-card';
+                    card.innerHTML = `
+                        <div class="mission-option-top">
+                            <div class="mission-option-info">
+                                <span style="font-size: 1.3rem;">${sub.icon}</span>
+                                <div><strong>${sub.name}</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP ${sub.exp}+</div></div>
+                            </div>
+                        </div>
+                        <div class="school-sub-options">
+                            <div class="school-sub-row">
+                                <span>مذاكرة دروس</span>
+                                <div class="mission-quantity-box"><input type="number" id="weekly_${sub.key}_study" class="mission-quantity-input" value="1" min="0" max="100"><span style="font-size: 0.8rem; opacity: 0.7;">مهمة</span></div>
+                            </div>
+                            <div class="school-sub-row">
+                                <span>حل أسئلة</span>
+                                <div class="mission-quantity-box"><input type="number" id="weekly_${sub.key}_questions" class="mission-quantity-input" value="1" min="0" max="100"><span style="font-size: 0.8rem; opacity: 0.7;">مهمة</span></div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = `
+                    <div class="mission-option-card"><div class="mission-option-top"><div class="mission-option-info"><span style="font-size: 1.3rem;">📚</span><div><strong>البنك الكمي</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP 10+</div></div></div><div class="mission-quantity-box"><input type="number" id="weekly_qty_bank" class="mission-quantity-input" value="4" min="0" max="100"><span style="font-size: 0.85rem; opacity: 0.7;">مهمة</span></div></div></div>
+                    <div class="mission-option-card"><div class="mission-option-top"><div class="mission-option-info"><span style="font-size: 1.3rem;">📐</span><div><strong>القسم الكمي</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP 2+</div></div></div><div class="mission-quantity-box"><input type="number" id="weekly_qty_qanat" class="mission-quantity-input" value="5" min="0" max="100"><span style="font-size: 0.85rem; opacity: 0.7;">مهمة</span></div></div></div>
+                    <div class="mission-option-card"><div class="mission-option-top"><div class="mission-option-info"><span style="font-size: 1.3rem;">📖</span><div><strong>القسم اللفظي</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP 2+</div></div></div><div class="mission-quantity-box"><input type="number" id="weekly_qty_verbal" class="mission-quantity-input" value="5" min="0" max="100"><span style="font-size: 0.85rem; opacity: 0.7;">مهمة</span></div></div></div>
+                    <div class="mission-option-card"><div class="mission-option-top"><div class="mission-option-info"><span style="font-size: 1.3rem;">📝</span><div><strong>الاختبار اللفظي من البنك</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP 5+</div></div></div><div class="mission-quantity-box"><input type="number" id="weekly_qty_verbal_test" class="mission-quantity-input" value="2" min="0" max="100"><span style="font-size: 0.85rem; opacity: 0.7;">مهمة</span></div></div></div>
+                `;
+            }
+            document.getElementById('weeklyPlannerModal').style.display = 'flex';
+        }
+
+        function closeWeeklyPlanner() {
+            document.getElementById('weeklyPlannerModal').style.display = 'none';
+        }
+
+        function openTodayOnlyPlannerModal() {
+            const container = document.getElementById('todayOnlyOptionsContainer');
+            container.innerHTML = '';
+            const lang = userData.language || 'ar';
+
+            if (userData.systemType === 'school') {
+                const subjects = [
+                    { key: 'studies', name: 'دراسات', icon: '🌍', exp: 5 },
+                    { key: 'science', name: 'علوم', icon: '🔬', exp: 5 },
+                    { key: 'math', name: 'رياضة', icon: '📐', exp: 10 },
+                    { key: 'english', name: 'إنجليزي', icon: '🗣️', exp: 5 },
+                    { key: 'arabic', name: 'عربي', icon: '📚', exp: 5 }
+                ];
+                subjects.forEach(sub => {
+                    const card = document.createElement('div');
+                    card.className = 'mission-option-card';
+                    card.innerHTML = `
+                        <div class="mission-option-top">
+                            <div class="mission-option-info">
+                                <span style="font-size: 1.3rem;">${sub.icon}</span>
+                                <div><strong>${sub.name}</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP ${sub.exp}+</div></div>
+                            </div>
+                        </div>
+                        <div class="school-sub-options">
+                            <div class="school-sub-row">
+                                <span>مذاكرة دروس</span>
+                                <div class="mission-quantity-box"><input type="number" id="today_${sub.key}_study" class="mission-quantity-input" value="0" min="0" max="100"><span style="font-size: 0.8rem; opacity: 0.7;">مهمة</span></div>
+                            </div>
+                            <div class="school-sub-row">
+                                <span>حل أسئلة</span>
+                                <div class="mission-quantity-box"><input type="number" id="today_${sub.key}_questions" class="mission-quantity-input" value="0" min="0" max="100"><span style="font-size: 0.8rem; opacity: 0.7;">مهمة</span></div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = `
+                    <div class="mission-option-card"><div class="mission-option-top"><div class="mission-option-info"><span style="font-size: 1.3rem;">📚</span><div><strong>البنك الكمي</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP 10+</div></div></div><div class="mission-quantity-box"><input type="number" id="today_qty_bank" class="mission-quantity-input" value="0" min="0" max="100"><span style="font-size: 0.85rem; opacity: 0.7;">مهمة</span></div></div></div>
+                    <div class="mission-option-card"><div class="mission-option-top"><div class="mission-option-info"><span style="font-size: 1.3rem;">📐</span><div><strong>القسم الكمي</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP 2+</div></div></div><div class="mission-quantity-box"><input type="number" id="today_qty_qanat" class="mission-quantity-input" value="0" min="0" max="100"><span style="font-size: 0.85rem; opacity: 0.7;">مهمة</span></div></div></div>
+                    <div class="mission-option-card"><div class="mission-option-top"><div class="mission-option-info"><span style="font-size: 1.3rem;">📖</span><div><strong>القسم اللفظي</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP 2+</div></div></div><div class="mission-quantity-box"><input type="number" id="today_qty_verbal" class="mission-quantity-input" value="0" min="0" max="100"><span style="font-size: 0.85rem; opacity: 0.7;">مهمة</span></div></div></div>
+                    <div class="mission-option-card"><div class="mission-option-top"><div class="mission-option-info"><span style="font-size: 1.3rem;">📝</span><div><strong>الاختبار اللفظي من البنك</strong><div style="font-size: 0.8rem; color: var(--primary-neon);">EXP 5+</div></div></div><div class="mission-quantity-box"><input type="number" id="today_qty_verbal_test" class="mission-quantity-input" value="0" min="0" max="100"><span style="font-size: 0.85rem; opacity: 0.7;">مهمة</span></div></div></div>
+                `;
+            }
+            document.getElementById('todayOnlyPlannerModal').style.display = 'flex';
+        }
+
+        function closeTodayOnlyPlannerModal() {
+            document.getElementById('todayOnlyPlannerModal').style.display = 'none';
+        }
+
+        function saveTodayOnlyMissions() {
+            const lang = userData.language || 'ar';
+            let newMissions = [];
+
+            if (userData.systemType === 'school') {
+                const subjects = [
+                    { key: 'studies', name: 'دراسات', exp: 5 },
+                    { key: 'science', name: 'علوم', exp: 5 },
+                    { key: 'math', name: 'رياضة', exp: 10 },
+                    { key: 'english', name: 'إنجليزي', exp: 5 },
+                    { key: 'arabic', name: 'عربي', exp: 5 }
+                ];
+                subjects.forEach(sub => {
+                    const studyQty = parseInt(document.getElementById(`today_${sub.key}_study`)?.value) || 0;
+                    const questQty = parseInt(document.getElementById(`today_${sub.key}_questions`)?.value) || 0;
+
+                    for(let k=0; k<studyQty; k++) {
+                        newMissions.push({ name: `${sub.name} (مذاكرة دروس)` + (studyQty > 1 ? ` (${k+1})` : ''), exp: sub.exp, completed: false });
+                    }
+                    for(let k=0; k<questQty; k++) {
+                        newMissions.push({ name: `${sub.name} (حل أسئلة)` + (questQty > 1 ? ` (${k+1})` : ''), exp: sub.exp, completed: false });
+                    }
+                });
+            } else {
+                const qtyBank = parseInt(document.getElementById('today_qty_bank')?.value) || 0;
+                const qtyQanat = parseInt(document.getElementById('today_qty_qanat')?.value) || 0;
+                const qtyVerbal = parseInt(document.getElementById('today_qty_verbal')?.value) || 0;
+                const qtyVerbalTest = parseInt(document.getElementById('today_qty_verbal_test')?.value) || 0;
+
+                for(let k=0; k<qtyBank; k++) newMissions.push({ name: (lang === 'ar' ? 'البنك الكمي (50 سؤال)' : 'Quantitative Bank (50 Q)') + (qtyBank > 1 ? ` (${k+1})` : ''), exp: 10, completed: false });
+                for(let k=0; k<qtyQanat; k++) newMissions.push({ name: (lang === 'ar' ? 'القسم الكمي (تأسيس ورقة)' : 'Quantitative Section (Sheet Setup)') + (qtyQanat > 1 ? ` (${k+1})` : ''), exp: 2, completed: false });
+                for(let k=0; k<qtyVerbal; k++) newMissions.push({ name: (lang === 'ar' ? 'القسم اللفظي (قطع واستيعاب المقروء)' : 'Verbal Section (Reading Comp)') + (qtyVerbal > 1 ? ` (${k+1})` : ''), exp: 2, completed: false });
+                for(let k=0; k<qtyVerbalTest; k++) newMissions.push({ name: (lang === 'ar' ? 'الاختبار اللفظي من البنك' : 'Verbal Test from Bank') + (qtyVerbalTest > 1 ? ` (${k+1})` : ''), exp: 5, completed: false });
+            }
+
+            if (newMissions.length === 0) {
+                alert(lang === 'ar' ? "⚠️ يرجى تحديد مهمة واحدة على الأقل لإضافتها لليوم!" : "⚠️ Select at least one mission to add!");
+                return;
+            }
+
+            newMissions.forEach(m => {
+                userData.weeklySchedule.push(m);
+                const newIdx = userData.weeklySchedule.length - 1;
+                if (!userData.todayIndices.includes(newIdx)) {
+                    userData.todayIndices.push(newIdx);
+                }
+            });
+
+            saveLocalUserData();
+            closeTodayOnlyPlannerModal();
+            renderMissions();
+            alert(lang === 'ar' ? "⚡ تم إضافة المهام المحددة إلى بروتوكول اليوم بنجاح!" : "⚡ Missions added to today successfully!");
+        }
+
+        function openAddFromWeeklyModal() {
+            const listContainer = document.getElementById('addFromWeeklyListContainer');
+            listContainer.innerHTML = '';
+            const lang = userData.language || 'ar';
+
+            if (!userData.weeklySchedule || userData.weeklySchedule.length === 0) {
+                const p = document.createElement('p');
+                p.style.cssText = "opacity: 0.7; text-align: center;";
+                p.textContent = lang === 'ar' ? 'لا توجد مهام في جدول الأسبوع حالياً.' : 'No weekly missions.';
+                listContainer.appendChild(p);
+            } else {
+                userData.weeklySchedule.forEach((mission, idx) => {
+                    const isAlreadyInToday = userData.todayIndices.includes(idx);
+
+                    const div = document.createElement('div');
+                    div.style.cssText = "background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;";
+
+                    const strong = document.createElement('strong');
+                    strong.style.fontSize = '0.95rem';
+                    strong.textContent = mission.name;
+
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'add-qty-btn';
+                    if (isAlreadyInToday) {
+                        addBtn.disabled = true;
+                        addBtn.style.opacity = '0.5';
+                        addBtn.textContent = lang === 'ar' ? 'مضافة بالفعل ✓' : 'Added ✓';
+                    } else {
+                        addBtn.onclick = () => addWeeklyMissionToToday(idx);
+                        addBtn.textContent = lang === 'ar' ? '+ إضافة لليوم' : '+ Add to Today';
+                    }
+
+                    div.appendChild(strong);
+                    div.appendChild(addBtn);
+                    listContainer.appendChild(div);
+                });
+            }
+            document.getElementById('addFromWeeklyModal').style.display = 'flex';
+        }
+
+        function closeAddFromWeeklyModal() {
+            document.getElementById('addFromWeeklyModal').style.display = 'none';
+        }
+
+        function addWeeklyMissionToToday(weeklyIndex) {
+            if (!userData.todayIndices.includes(weeklyIndex)) {
+                userData.todayIndices.push(weeklyIndex);
+                saveLocalUserData();
+                renderMissions();
+                openAddFromWeeklyModal();
+            }
+        }
+
+        function saveWeeklyPlannerSchedule() {
+            const lang = userData.language || 'ar';
+            let newWeeklySchedule = [];
+
+            if (userData.systemType === 'school') {
+                const subjects = [
+                    { key: 'studies', name: 'دراسات', exp: 5 },
+                    { key: 'science', name: 'علوم', exp: 5 },
+                    { key: 'math', name: 'رياضة', exp: 10 },
+                    { key: 'english', name: 'إنجليزي', exp: 5 },
+                    { key: 'arabic', name: 'عربي', exp: 5 }
+                ];
+                subjects.forEach(sub => {
+                    const studyQty = parseInt(document.getElementById(`weekly_${sub.key}_study`)?.value) || 0;
+                    const questQty = parseInt(document.getElementById(`weekly_${sub.key}_questions`)?.value) || 0;
+
+                    for(let k=0; k<studyQty; k++) {
+                        newWeeklySchedule.push({ name: `${sub.name} (مذاكرة دروس)` + (studyQty > 1 ? ` (${k+1})` : ''), exp: sub.exp, completed: false });
+                    }
+                    for(let k=0; k<questQty; k++) {
+                        newWeeklySchedule.push({ name: `${sub.name} (حل أسئلة)` + (questQty > 1 ? ` (${k+1})` : ''), exp: sub.exp, completed: false });
+                    }
+                });
+            } else {
+                const qtyBank = parseInt(document.getElementById('weekly_qty_bank')?.value) || 0;
+                const qtyQanat = parseInt(document.getElementById('weekly_qty_qanat')?.value) || 0;
+                const qtyVerbal = parseInt(document.getElementById('weekly_qty_verbal')?.value) || 0;
+                const qtyVerbalTest = parseInt(document.getElementById('weekly_qty_verbal_test')?.value) || 0;
+
+                for(let k=0; k<qtyBank; k++) newWeeklySchedule.push({ name: (lang === 'ar' ? 'البنك الكمي (50 سؤال)' : 'Quantitative Bank (50 Q)') + (qtyBank > 1 ? ` (${k+1})` : ''), exp: 10, completed: false });
+                for(let k=0; k<qtyQanat; k++) newWeeklySchedule.push({ name: (lang === 'ar' ? 'القسم الكمي (تأسيس ورقة)' : 'Quantitative Section (Sheet Setup)') + (qtyQanat > 1 ? ` (${k+1})` : ''), exp: 2, completed: false });
+                for(let k=0; k<qtyVerbal; k++) newWeeklySchedule.push({ name: (lang === 'ar' ? 'القسم اللفظي (قطع واستيعاب المقروء)' : 'Verbal Section (Reading Comp)') + (qtyVerbal > 1 ? ` (${k+1})` : ''), exp: 2, completed: false });
+                for(let k=0; k<qtyVerbalTest; k++) newWeeklySchedule.push({ name: (lang === 'ar' ? 'الاختبار اللفظي من البنك' : 'Verbal Test from Bank') + (qtyVerbalTest > 1 ? ` (${k+1})` : ''), exp: 5, completed: false });
+            }
+
+            if (newWeeklySchedule.length === 0) {
+                alert(lang === 'ar' ? "⚠️ يرجى اختيار مهمة واحدة على الأقل!" : "⚠️ Select at least one mission!");
+                return;
+            }
+
+            userData.weeklySchedule = newWeeklySchedule;
+            distributeWeeklyToDays(userData); 
+            userData.bossDefeatedShown = false;
+            generateAndStoreWeeklyPlan();
+
+            saveLocalUserData();
+            closeWeeklyPlanner();
+            renderMissions();
+            openPlanModal();
+        }
+
+        function openDeleteWeeklyMissionCardModal() {
+            const listContainer = document.getElementById('deleteWeeklyMissionsCardList');
+            listContainer.innerHTML = '';
+            const lang = userData.language || 'ar';
+
+            if (!userData.weeklySchedule || userData.weeklySchedule.length === 0) {
+                const p = document.createElement('p');
+                p.style.cssText = "opacity: 0.7; text-align: center;";
+                p.textContent = lang === 'ar' ? 'لا توجد مهام.' : 'No missions.';
+                listContainer.appendChild(p);
+            } else {
+                userData.weeklySchedule.forEach((mission, idx) => {
+                    const div = document.createElement('div');
+                    div.style.cssText = "background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;";
+                    
+                    const strong = document.createElement('strong');
+                    strong.textContent = mission.name;
+                    const btn = document.createElement('button');
+                    btn.onclick = () => confirmAndDeleteOneWeeklyMission(idx);
+                    btn.style.cssText = "background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 1rem;";
+                    btn.textContent = "🗑️";
+
+                    div.appendChild(strong);
+                    div.appendChild(btn);
+                    listContainer.appendChild(div);
+                });
+            }
+            document.getElementById('deleteWeeklyMissionCardModal').style.display = 'flex';
+        }
+
+        function closeDeleteWeeklyMissionCardModal() {
+            document.getElementById('deleteWeeklyMissionCardModal').style.display = 'none';
+        }
+
+        function confirmAndDeleteOneWeeklyMission(weeklyIndex) {
+            const lang = userData.language || 'ar';
+            if (confirm(lang === 'ar' ? "هل أنت متأكد من حذف هذه المهمة نهائياً من الأسبوع؟" : "Permanently delete this mission?")) {
+                userData.weeklySchedule.splice(weeklyIndex, 1);
+                userData.todayIndices = userData.weeklySchedule.map((_, idx) => idx);
+                userData.bossDefeatedShown = false;
+
+                generateAndStoreWeeklyPlan();
+                saveLocalUserData();
+                renderMissions();
+                closeDeleteWeeklyMissionCardModal();
+                openPlanModal();
+            }
+        }
+
+        function openPomodoroModal() {
+            applyInterestToPomodoroModal();
+            if (isTimerRunning) {
+                document.getElementById('routesContainer').style.display = 'none';
+                document.getElementById('timerActiveArea').style.display = 'block';
+                updateTimerDisplay();
+            } else {
+                renderInterestRoutes();
+                document.getElementById('timerActiveArea').style.display = 'none';
+                document.getElementById('routesContainer').style.display = 'grid';
+            }
+            document.getElementById('pomodoroModal').style.display = 'flex';
+        }
+
+        function hidePomodoroModalScreen() {
+            document.getElementById('pomodoroModal').style.display = 'none';
+            updatePomodoroHeaderButtonState();
+        }
+
+        function updatePomodoroHeaderButtonState() {
+            const btn = document.getElementById('pomodoroHeaderBtn');
+            const mobileBtn = document.getElementById('pomodoroMobileHeaderBtn');
+            if (isTimerRunning) {
+                const remainingSecs = Math.max(0, Math.ceil((timerEndTime - Date.now()) / 1000));
+                const m = Math.floor(remainingSecs / 60);
+                const s = remainingSecs % 60;
+                const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                const text = isTimerPaused ? `⏸️ ${formatted}` : `⏳ ${formatted}`;
+                if (btn) { btn.innerHTML = text; btn.style.boxShadow = "0 0 15px var(--primary-neon)"; }
+                if (mobileBtn) { mobileBtn.innerHTML = `⏱️ <span style="font-size:0.9rem;">${text}</span>`; }
+            } else {
+                if (btn) { btn.innerHTML = `⏱️`; btn.style.boxShadow = "0 0 10px var(--neon-glow)"; }
+                if (mobileBtn) { mobileBtn.innerHTML = `⏱️ <span style="font-size:0.9rem;">مؤقت التركيز</span>`; }
+            }
+        }
+
+        const pomodoroThemeConfig = {
+            طيران: {
+                modalTitle: { ar: "مركز إدارة الرحلات الجوية", en: "Flight Operations Center" },
+                modalSub: { ar: "اختر خط سير الرحلة أو حدد وقت التركيز:", en: "Choose flight route or focus time:" },
+                customBtn: { ar: "بدء رحلة الوقت المخصص", en: "Start Custom Flight Session" },
+                routes: [
+                    { name: { ar: "رحلة إقليمية قصيرة (الرياض - جدة)", en: "Regional Flight (Riyadh - Jeddah)" }, minutes: 25, exp: 5, icon: "🛫" },
+                    { name: { ar: "رحلة عبر القارات (الرياض - لندن)", en: "Intercontinental Flight (Riyadh - London)" }, minutes: 45, exp: 12, icon: "🌍" },
+                    { name: { ar: "رحلة الطيران الطويل (الرياض - نيويورك)", en: "Long-haul Flight (Riyadh - New York)" }, minutes: 60, exp: 20, icon: "🌐" },
+                    { name: { ar: "تدريب المحاكي الاحترافي المتقدم", en: "Advanced Simulator Training" }, minutes: 90, exp: 30, icon: "✈️" }
+                ]
+            },
+            طب: {
+                modalTitle: { ar: "مركز العمليات والمناوبات الطبية", en: "Medical Operations Center" },
+                modalSub: { ar: "اختر نوع الاستشارة أو الحالة الطارئة لبدء المناوبة:", en: "Choose consultation or emergency:" },
+                customBtn: { ar: "بدء مناوبة التركيز الفوري", en: "Start Focus Shift" },
+                routes: [
+                    { name: { ar: "مناوبة الكشف السريع (طوارئ الباطنة)", en: "ER Internal Medicine Shift" }, minutes: 25, exp: 5, icon: "🏥" },
+                    { name: { ar: "جراحة دقيقة (قسم الأعصاب وجراحة الدماغ)", en: "Neurosurgery Operation" }, minutes: 45, exp: 12, icon: "🧠" },
+                    { name: { ar: "عملية معقدة (جراحة التجميل والترميم)", en: "Plastic Surgery Operation" }, minutes: 60, exp: 20, icon: "✨" },
+                    { name: { ar: "بحث تشريحي وإكلينيكي متقدم", en: "Advanced Clinical Research" }, minutes: 90, exp: 30, icon: "🩺" }
+                ]
+            },
+            برمجة: {
+                modalTitle: { ar: "مركز تطوير الخوارزميات والبرمجيات", en: "Code Development Center" },
+                modalSub: { ar: "اختر موديول البرمجة لبدء جلسة الكودينج:", en: "Choose coding module to start:" },
+                customBtn: { ar: "بدء جلسة الكودينج المخصصة", en: "Start Custom Coding Session" },
+                routes: [
+                    { name: { ar: "كتابة سكريبت سريع وبسيط", en: "Quick Scripting" }, minutes: 25, exp: 5, icon: "⌨️" },
+                    { name: { ar: "فحص وإصلاح الأخطاء (Debugging)", en: "Debugging Session" }, minutes: 45, exp: 12, icon: "🛠️" },
+                    { name: { ar: "تطوير تطبيق ويب كامل (Full-stack)", en: "Full-stack Web Build" }, minutes: 60, exp: 20, icon: "🌐" },
+                    { name: { ar: "هندسة معمارية للنظام (System Architecture)", en: "System Architecture Design" }, minutes: 90, exp: 30, icon: "💻" }
+                ]
+            },
+            هندسة: {
+                modalTitle: { ar: "مركز إدارة المشاريع والإنشاءات الهندسية", en: "Engineering Management Center" },
+                modalSub: { ar: "اختر المرحلة الهندسية لبدء جلسة التشييد:", en: "Choose engineering phase:" },
+                customBtn: { ar: "بدء جلسة التشييد المخصصة", en: "Start Custom Construction Session" },
+                routes: [
+                    { name: { ar: "تصميم المخططات الأولية (Drafting)", en: "Initial Drafting" }, minutes: 25, exp: 5, icon: "📐" },
+                    { name: { ar: "حسابات الإنشائات والأحمال", en: "Structural Calculations" }, minutes: 45, exp: 12, icon: "🧱" },
+                    { name: { ar: "إدارة موقع المشروع الهندسي الضخم", en: "Megaproject Site Management" }, minutes: 60, exp: 20, icon: "🏗️" },
+                    { name: { ar: "مراجعة الجدوى الفنية والهندسية الشاملة", en: "Comprehensive Feasibility Review" }, minutes: 90, exp: 30, icon: "📊" }
+                ]
+            },
+            لغات: {
+                modalTitle: { ar: "مركز اكتساب اللغات واللسانيات", en: "Language Acquisition Center" },
+                modalSub: { ar: "اختر نشاط التعلم أو الممارسة اللغوية:", en: "Choose language practice activity:" },
+                customBtn: { ar: "بدء جلسة اللغات المخصصة", en: "Start Custom Language Session" },
+                routes: [
+                    { name: { ar: "جلسة تجميع وحفظ المفردات السريعة", en: "Quick Vocabulary Session" }, minutes: 25, exp: 5, icon: "📖" },
+                    { name: { ar: "ممارسة الاستماع الفعّال (Shadowing)", en: "Active Shadowing Practice" }, minutes: 45, exp: 12, icon: "🎧" },
+                    { name: { ar: "قراءة مقال أو قصة أجنبية متقدمة", en: "Advanced Reading Comprehension" }, minutes: 60, exp: 20, icon: "📚" },
+                    { name: { ar: "محادثة حرة ومناظرة لغوية شاملة", en: "Full Language Debate & Conversation" }, minutes: 90, exp: 30, icon: "🗣️" }
+                ]
+            }
+        };
+
+        let timerInterval = null;
+        let timerEndTime = 0;
+        let totalTimerSeconds = 0;
+        let remainingSecondsWhenPaused = 0;
+        let activeRouteTitle = "";
+        let earnedExpForTimer = 0;
+        let isTimerRunning = false; 
+        let isTimerPaused = false;
+        let rewardClaimedForCurrentSession = false;
+
+        function applyInterestToPomodoroModal() {
+            const currentInterest = userData.interest || 'طيران';
+            const lang = userData.language || 'ar';
+            const config = pomodoroThemeConfig[currentInterest] || pomodoroThemeConfig['طيران'];
+            document.getElementById('pomodoroModalTitle').textContent = config.modalTitle[lang];
+            document.getElementById('pomodoroModalSubtitle').textContent = config.modalSub[lang];
+            document.getElementById('customTimeStartBtn').textContent = config.customBtn[lang];
+        }
+
+        function renderInterestRoutes() {
+            const currentInterest = userData.interest || 'طيران';
+            const lang = userData.language || 'ar';
+            const config = pomodoroThemeConfig[currentInterest] || pomodoroThemeConfig['طيران'];
+            const container = document.getElementById('routesContainer');
+            container.innerHTML = '';
+
+            config.routes.forEach((route) => {
+                const card = document.createElement('div');
+                card.style.cssText = "background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer;";
+                card.onclick = () => startRouteTimer(route.name[lang], route.minutes, route.exp);
+                card.innerHTML = `
+                    <div style="font-size: 2rem; margin-bottom: 5px;">${route.icon}</div>
+                    <strong style="font-size: 1rem; display: block; margin-bottom: 5px; color: var(--text-color);">${route.name[lang]}</strong>
+                    <div style="font-size: 0.85rem; color: var(--primary-neon); font-weight: bold;">⏱️ ${route.minutes} ${lang === 'ar' ? 'دقيقة' : 'mins'} | +${route.exp} EXP</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function startRouteTimer(routeName, minutes, expReward) {
+            activeRouteTitle = routeName;
+            earnedExpForTimer = expReward;
+            totalTimerSeconds = minutes * 60;
+            timerEndTime = Date.now() + (totalTimerSeconds * 1000);
+            isTimerRunning = true;
+            isTimerPaused = false;
+            rewardClaimedForCurrentSession = false;
+
+            document.getElementById('routesContainer').style.display = 'none';
+            document.getElementById('timerActiveArea').style.display = 'block';
+            document.getElementById('activeRouteName').textContent = routeName;
+            runTimestampTimerEngine();
+        }
+
+        function startCustomTimeSession() {
+            const minsInput = parseInt(document.getElementById('customMinutesInput').value);
+            const lang = userData.language || 'ar';
+            if (isNaN(minsInput) || minsInput < 1 || minsInput > 300) {
+                alert(lang === 'ar' ? "⚠️ يرجى إدخال وقت صحيح بين 1 و 300 دقيقة!" : "⚠️ Please enter a valid duration between 1 and 300 minutes!");
+                return;
+            }
+            activeRouteTitle = lang === 'ar' ? `⚡ جلسة تركيز مخصصة (${minsInput} دقيقة)` : `⚡ Custom Focus Session (${minsInput} mins)`;
+            earnedExpForTimer = Math.round(minsInput / 3);
+            totalTimerSeconds = minsInput * 60;
+            timerEndTime = Date.now() + (totalTimerSeconds * 1000);
+            isTimerRunning = true;
+            isTimerPaused = false;
+            rewardClaimedForCurrentSession = false;
+
+            document.getElementById('routesContainer').style.display = 'none';
+            document.getElementById('timerActiveArea').style.display = 'block';
+            document.getElementById('activeRouteName').textContent = activeRouteTitle;
+            runTimestampTimerEngine();
+        }
+
+        function togglePauseTimer() {
+            const lang = userData.language || 'ar';
+            const pauseBtn = document.getElementById('pauseTimerBtn');
+
+            if (!isTimerPaused) {
+                isTimerPaused = true;
+                remainingSecondsWhenPaused = Math.max(0, Math.ceil((timerEndTime - Date.now()) / 1000));
+                if (timerInterval) clearInterval(timerInterval);
+                pauseBtn.textContent = lang === 'ar' ? "استئناف المؤقت ▶️" : "Resume ▶️";
+            } else {
+                isTimerPaused = false;
+                timerEndTime = Date.now() + (remainingSecondsWhenPaused * 1000);
+                runTimestampTimerEngine();
+                pauseBtn.textContent = lang === 'ar' ? "إيقاف مؤقت ⏸️" : "Pause ⏸️";
+            }
+            updatePomodoroHeaderButtonState();
+        }
+
+        function runTimestampTimerEngine() {
+            if (timerInterval) clearInterval(timerInterval);
+            updateTimerDisplay();
+            updatePomodoroHeaderButtonState();
+
+            timerInterval = setInterval(() => {
+                if (!isTimerPaused) {
+                    const remainingSecs = Math.max(0, Math.ceil((timerEndTime - Date.now()) / 1000));
+                    updateTimerDisplay(remainingSecs);
+                    updatePomodoroHeaderButtonState();
+
+                    if (remainingSecs <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isTimerRunning = false;
+                        isTimerPaused = false;
+                        updatePomodoroHeaderButtonState();
+
+                        if (!rewardClaimedForCurrentSession) {
+                            rewardClaimedForCurrentSession = true;
+                            userData.exp += earnedExpForTimer;
+                            saveLocalUserData();
+                            updateStats();
+                            triggerExternalAlert();
+                        }
+                    }
+                }
+            }, 500);
+        }
+
+        function updateTimerDisplay(secOverride = null) {
+            const remainingSecs = secOverride !== null ? secOverride : Math.max(0, Math.ceil((timerEndTime - Date.now()) / 1000));
+            const m = Math.floor(remainingSecs / 60);
+            const s = remainingSecs % 60;
+            const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            const el = document.getElementById('timerDisplay');
+            if (el) el.textContent = formatted;
+        }
+
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            isTimerRunning = false;
+            isTimerPaused = false;
+            rewardClaimedForCurrentSession = false;
+            updatePomodoroHeaderButtonState();
+            document.getElementById('timerActiveArea').style.display = 'none';
+            document.getElementById('routesContainer').style.display = 'grid';
+        }
+
+        function triggerExternalAlert() {
+            const lang = userData.language || 'ar';
+            document.getElementById('alertModalTitle').textContent = lang === 'ar' ? "انتهى وقت التركيز بنجاح يا بطل! 🚀" : "Timer Finished Successfully! 🚀";
+            document.getElementById('alertModalDesc').textContent = lang === 'ar' ? `تمت إضافة مكافأة +${earnedExpForTimer} EXP إلى رصيدك! ✨` : `Reward of +${earnedExpForTimer} EXP added! ✨`;
+            document.getElementById('pomodoroModal').style.display = 'none';
+            document.getElementById('timerAlertModal').style.display = 'flex';
+        }
+        function closeAlertModal() { document.getElementById('timerAlertModal').style.display = 'none'; }
+
+        function toggleShop() {
+            const modal = document.getElementById('shopModal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function buyShopItem(itemKey, cost) {
+            const lang = userData.language || 'ar';
+            const interest = userData.interest || 'طيران';
+            const interestNames = { طيران: 'طيران', طب: 'طب', برمجة: 'برمجة', هندسة: 'هندسة', لغات: 'لغات' };
+
+            const itemNames = {
+                shield: lang === 'ar' ? '🛡️ درع تجميد اليوم (Stress Shield)' : '🛡️ Stress Shield',
+                color_card: lang === 'ar' ? '🎨 كارت تخصيص الألوان' : '🎨 Color Customizer Card',
+                clear_card: lang === 'ar' ? '🗑️ إلغاء مهمة من مهام الاسبوع' : '🗑️ Weekly Mission Clear Card',
+                coffee: lang === 'ar' ? '☕ كوب قهوة فاخر' : '☕ Luxury Coffee',
+                walk: lang === 'ar' ? '🚶‍♂️ تصريح التمشي ٣٠د' : '🚶‍♂️ 30-min Walking Pass',
+                free_hour: lang === 'ar' ? '⏳ ساعة فراغ ليك' : '⏳ Free Hour',
+                interest_study: lang === 'ar' ? `📖 ساعة تعلم ${interestNames[interest]}` : `📖 Study Hour (${interestNames[interest]})`
+            };
+            const itemName = itemNames[itemKey] || 'Reward';
+
+            const confirmMsg = lang === 'ar' ? 
+                `هل أنت متأكد من رغبتك في شراء "${itemName}" مقابل ${cost} EXP؟` : 
+                `Are you sure you want to buy "${itemName}" for ${cost} EXP?`;
+
+            if (!confirm(confirmMsg)) return;
+
+            if (userData.exp >= cost) {
+                userData.exp -= cost;
+                userData.inventory.push({ name: itemName, type: itemKey });
+                saveLocalUserData();
+                updateStats();
+                alert(lang === 'ar' ? `تم الشراء بنجاح! تمت إضافة "${itemName}" إلى حقيبتك 📦✨` : `Purchased successfully! "${itemName}" added to inventory.`);
+                toggleShop();
+            } else {
+                alert(lang === 'ar' ? "نقاط الـ EXP الحالية غير كافية لإتمام الشراء!" : "Insufficient EXP points!");
+            }
+        }
+
+        function openInventory() {
+            const modal = document.getElementById('inventoryModal');
+            const container = document.getElementById('inventoryItemsContainer');
+            container.innerHTML = '';
+            const lang = userData.language || 'ar';
+
+            if (userData.inventory.length === 0) {
+                const p = document.createElement('p');
+                p.style.cssText = "opacity: 0.7; text-align: center;";
+                p.textContent = lang === 'ar' ? 'حقيبتك فارغة حالياً.' : 'Your inventory is currently empty.';
+                container.appendChild(p);
+            } else {
+                userData.inventory.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.style.cssText = "background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;";
+                    
+                    const strong = document.createElement('strong');
+                    strong.textContent = item.name;
+                    const btn = document.createElement('button');
+                    btn.className = 'add-qty-btn';
+                    btn.style.cssText = "padding: 5px 10px; font-size: 0.8rem;";
+                    btn.onclick = () => useInventoryItem(idx);
+                    btn.textContent = lang === 'ar' ? 'استخدام' : 'Use';
+
+                    div.appendChild(strong);
+                    div.appendChild(btn);
+                    container.appendChild(div);
+                });
+            }
+            modal.style.display = 'flex';
+        }
+        function closeInventory() { document.getElementById('inventoryModal').style.display = 'none'; }
+
+        let rewardTimerInterval = null;
+        let rewardTimeLeftSeconds = 0;
+
+        function useInventoryItem(idx) {
+            const item = userData.inventory[idx];
+            const lang = userData.language || 'ar';
+            
+            if (item.type === 'shield') {
+                userData.isShieldActive = true;
+                userData.shieldTimestamp = Date.now();
+                alert(lang === 'ar' ? `🛡️ تم تفعيل "درع تجميد اليوم" بنجاح!` : `🛡️ Stress Shield activated!`);
+                userData.inventory.splice(idx, 1);
+            } else if (item.type === 'color_card') {
+                userData.freeColorChanges = { primary: false, bg: false, cardBg: false, text: false, cursor: false };
+                saveLocalUserData();
+                alert(lang === 'ar' ? `🎨 تم تفعيل 'كارت تخصيص الألوان'!` : `🎨 Color Card activated!`);
+                userData.inventory.splice(idx, 1);
+            } else if (item.type === 'clear_card') {
+                userData.inventory.splice(idx, 1);
+                saveLocalUserData();
+                closeInventory();
+                openDeleteWeeklyMissionCardModal();
+                return;
+            } else if (item.type === 'coffee') {
+                closeInventory();
+                startRewardSessionTimer(item.name, '☕', 30 * 60);
+                userData.inventory.splice(idx, 1);
+                return;
+            } else if (item.type === 'walk') {
+                closeInventory();
+                startRewardSessionTimer(item.name, '🚶‍♂️', 30 * 60);
+                userData.inventory.splice(idx, 1);
+                return;
+            } else if (item.type === 'free_hour') {
+                closeInventory();
+                startRewardSessionTimer(item.name, '⏳', 60 * 60);
+                userData.inventory.splice(idx, 1);
+                return;
+            } else if (item.type === 'interest_study') {
+                closeInventory();
+                startRewardSessionTimer(item.name, '📖', 60 * 60);
+                userData.inventory.splice(idx, 1);
+                return;
+            } else {
+                alert(lang === 'ar' ? `تم استخدام "${item.name}" بنجاح!` : `Used "${item.name}" successfully!`);
+                userData.inventory.splice(idx, 1);
+            }
+
+            saveLocalUserData();
+            closeInventory();
+            updateStats();
+        }
+
+        function startRewardSessionTimer(title, icon, durationSeconds) {
+            const overlay = document.getElementById('rewardSessionOverlay');
+            document.getElementById('rewardOverlayIcon').textContent = icon;
+            document.getElementById('rewardOverlayTitle').textContent = title;
+            
+            rewardTimeLeftSeconds = durationSeconds;
+            updateRewardTimerDisplay();
+            overlay.style.display = 'flex';
+
+            if (rewardTimerInterval) clearInterval(rewardTimerInterval);
+
+            rewardTimerInterval = setInterval(() => {
+                rewardTimeLeftSeconds--;
+                updateRewardTimerDisplay();
+
+                if (rewardTimeLeftSeconds <= 0) {
+                    clearInterval(rewardTimerInterval);
+                    rewardTimerInterval = null;
+                    overlay.style.display = 'none';
+                    alert(userData.language === 'ar' ? "⏰ انتهى الوقت المحدد!" : "⏰ Time's up!");
+                }
+            }, 1000);
+        }
+
+        function updateRewardTimerDisplay() {
+            const m = Math.floor(rewardTimeLeftSeconds / 60);
+            const s = rewardTimeLeftSeconds % 60;
+            const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            const el = document.getElementById('rewardTimerDisplay');
+            if (el) el.textContent = formatted;
+        }
+
+        function finishRewardSessionManually() {
+            if (rewardTimerInterval) clearInterval(rewardTimerInterval);
+            rewardTimerInterval = null;
+            document.getElementById('rewardSessionOverlay').style.display = 'none';
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal.style.display === 'flex') {
+                // عند إغلاق النافذة، نتحقق من التغييرات المعلقة ونخصم الكارت إذا لزم الأمر
+                if (Object.keys(pendingColorChanges).length > 0) {
+                    if (needsColorCard) {
+                        const cardIdx = userData.inventory.findIndex(item => item.type === 'color_card');
+                        if (cardIdx !== -1) {
+                            userData.inventory.splice(cardIdx, 1);
+                        } else {
+                            // إذا لم يكن لديه كارت، نستعيد الألوان القديمة غير المعدلة
+                            Object.keys(pendingColorChanges).forEach(type => {
+                                delete userData.freeColorChanges[type];
+                            });
+                            pendingColorChanges = {};
+                            resetColorPickerInputs();
+                            applyCustomColors();
+                            alert(userData.language === 'ar' ? "❌ لم يتم حفظ التغييرات لعدم توفر كارت تخصيص الألوان في حقيبتك!" : "❌ Changes not saved due to missing color card!");
+                            modal.style.display = 'none';
+                            toggleShop();
+                            return;
+                        }
+                    }
+                    // تطبيق التغييرات نهائياً
+                    Object.keys(pendingColorChanges).forEach(type => {
+                        userData.customColors[type] = pendingColorChanges[type];
+                    });
+                    pendingColorChanges = {};
+                    needsColorCard = false;
+                    saveLocalUserData();
+                }
+                modal.style.display = 'none';
+            } else {
+                pendingColorChanges = {};
+                needsColorCard = false;
+                document.getElementById('primaryColorPicker').value = userData.customColors.primary;
+                document.getElementById('bgColorPicker').value = userData.customColors.bg;
+                document.getElementById('cardColorPicker').value = userData.customColors.cardBg || 'rgba(17, 24, 39, 0.85)';
+                document.getElementById('textColorPicker').value = userData.customColors.text;
+                document.getElementById('cursorColorPicker').value = userData.customColors.cursor;
+                loadSavedCertificatesList();
+                loadSavedPlansList();
+                modal.style.display = 'flex';
+            }
+        }
+
+        function toggleAccordion(contentId) {
+            const targetContent = document.getElementById(contentId);
+            const isOpen = targetContent.classList.contains('open');
+            
+            document.querySelectorAll('.settings-accordion-content').forEach(el => {
+                el.classList.remove('open');
+            });
+
+            if (!isOpen) {
+                targetContent.classList.add('open');
+            }
+        }
+
+        function updateProfileData() {
+            userData.systemType = document.getElementById('editSystemType').value;
+            userData.gender = document.getElementById('editGender').value;
+            userData.interest = document.getElementById('editInterest').value;
+            applySystemDefaultSchedule();
+            loadDailyMotivation();
+            applyInterestBranding();
+            updateShopDynamicInterestsText();
+            saveLocalUserData();
+            renderMissions();
+        }
+
+        function applyCustomColors() {
+            const root = document.documentElement;
+            const c = userData.customColors;
+            root.style.setProperty('--primary-neon', c.primary);
+            root.style.setProperty('--bg-color', c.bg);
+            root.style.setProperty('--card-bg', c.cardBg);
+            root.style.setProperty('--text-color', c.text);
+            root.style.setProperty('--cursor-color', c.cursor);
+            root.style.setProperty('--neon-glow', c.primary + '66');
+            root.style.setProperty('--border-color', c.primary + '55');
+        }
+
+        function resetToOriginalColors() {
+            userData.customColors = { primary: '#10b981', bg: '#0b0f19', cardBg: 'rgba(17, 24, 39, 0.85)', text: '#f3f4f6', cursor: '#10b981' };
+            userData.freeColorChanges = { primary: false, bg: false, cardBg: false, text: false, cursor: false };
+            pendingColorChanges = {};
+            needsColorCard = false;
+            applyCustomColors();
+            saveLocalUserData();
+            alert(userData.language === 'ar' ? "🔄 تم استعادة الألوان الأصلية." : "🔄 Restored original colors.");
+        }
+
+        function handleColorPickerInput(type, value) {
+            const lang = userData.language || 'ar';
+
+            if (!userData.freeColorChanges[type]) {
+                userData.freeColorChanges[type] = true;
+                pendingColorChanges[type] = value;
+            } else {
+                const cardIdx = userData.inventory.findIndex(item => item.type === 'color_card');
+                if (cardIdx === -1 && !userData.customColors[type]) {
+                    alert(lang === 'ar' ? "❌ يلزمك كارت تخصيص الألوان من المتجر لتعديل هذا العنصر مرة أخرى!" : "❌ Color card required from shop!");
+                    resetColorPickerInputs();
+                    return;
+                }
+                needsColorCard = true;
+                pendingColorChanges[type] = value;
+            }
+
+            // معاينة مؤقتة للون أثناء التحريك جوه القائمة
+            const root = document.documentElement;
+            if (type === 'primary') { root.style.setProperty('--primary-neon', value); root.style.setProperty('--neon-glow', value + '66'); root.style.setProperty('--border-color', value + '55'); }
+            else if (type === 'bg') root.style.setProperty('--bg-color', value);
+            else if (type === 'cardBg') root.style.setProperty('--card-bg', value);
+            else if (type === 'text') root.style.setProperty('--text-color', value);
+            else if (type === 'cursor') { root.style.setProperty('--cursor-color', value); }
+        }
+
+        function resetColorPickerInputs() {
+            document.getElementById('primaryColorPicker').value = userData.customColors.primary;
+            document.getElementById('bgColorPicker').value = userData.customColors.bg;
+            document.getElementById('cardColorPicker').value = userData.customColors.cardBg;
+            document.getElementById('textColorPicker').value = userData.customColors.text;
+            document.getElementById('cursorColorPicker').value = userData.customColors.cursor;
+        }
+
+        function toggleTheme() {
+            if (!userData.theme || userData.theme === 'dark') {
+                userData.theme = 'light';
+                userData.customColors.bg = '#f3f4f6';
+                userData.customColors.cardBg = '#ffffff';
+                userData.customColors.text = '#111827';
+            } else {
+                userData.theme = 'dark';
+                userData.customColors.bg = '#0b0f19';
+                userData.customColors.cardBg = 'rgba(17, 24, 39, 0.85)';
+                userData.customColors.text = '#f3f4f6';
+            }
+            applyCustomColors();
+            saveLocalUserData();
+        }
+
+        function toggleLanguage() {
+            userData.language = userData.language === 'ar' ? 'en' : 'ar';
+            applyTranslations();
+            applyInterestBranding();
+            renderMissions();
+            saveLocalUserData();
+        }
+
+        function checkStreakAndDayTransition(uData) {
+            if (uData.isShieldActive && uData.shieldTimestamp) {
+                const now = Date.now();
+                const hoursPassed = (now - uData.shieldTimestamp) / (1000 * 60 * 60);
+                if (hoursPassed >= 24) {
+                    uData.isShieldActive = false;
+                    uData.shieldTimestamp = null;
+                    saveLocalUserData();
+                }
+            }
+
+            if (uData.lastActiveDate !== todayDateStr) {
+                const allCompleted = uData.weeklySchedule.length > 0 && uData.weeklySchedule.every(m => m.completed);
+                
+                if (allCompleted) {
+                    uData.streak += 1;
+                } else {
+                    if (uData.isShieldActive) {
+                        const now = Date.now();
+                        const hoursPassed = uData.shieldTimestamp ? (now - uData.shieldTimestamp) / (1000 * 60 * 60) : 0;
+                        if (hoursPassed < 24) {
+                            alert("🛡️ تم تجميد اليوم بنجاح بواسطة الدرع ولم يُخصم الستريك!");
+                        } else {
+                            uData.isShieldActive = false;
+                            uData.shieldTimestamp = null;
+                            uData.streak = 0;
+                        }
+                    } else {
+                        uData.streak = 0;
+                    }
+                }
+
+                uData.weeklySchedule.forEach(m => m.completed = false);
+                uData.lastActiveDate = todayDateStr;
+                distributeWeeklyToDays(uData);
+                saveLocalUserData();
+            }
+        }
+
+        function distributeWeeklyToDays(uData) {
+            const total = uData.weeklySchedule.length;
+            if (total === 0) {
+                uData.todayIndices = [];
+                return;
+            }
+            const chunkSize = Math.ceil(total / 5);
+            const todayIndex = new Date().getDay() % 5;
+            const start = todayIndex * chunkSize;
+            const end = Math.min(start + chunkSize, total);
+            
+            let indices = [];
+            for(let i = start; i < end; i++) indices.push(i);
+            
+            if (uData.postponedIndices && Array.isArray(uData.postponedIndices)) {
+                uData.postponedIndices.forEach(pIdx => {
+                    if (pIdx < uData.weeklySchedule.length && !indices.includes(pIdx)) {
+                        indices.push(pIdx);
+                    }
+                });
+                uData.postponedIndices = [];
+            }
+
+            if (indices.length === 0) {
+                for(let i = 0; i < Math.min(4, total); i++) indices.push(i);
+            }
+            uData.todayIndices = indices;
+        }
+
+        function setupCursor() {
+            const cursor = document.getElementById('customCursor');
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+        }
+
+        function generateAndStoreWeeklyPlan() {
+            const planId = Date.now();
+            const weekNum = userData.currentWeekNumber || 1;
+            const lang = userData.language || 'ar';
+            const daysNames = lang === 'ar' ? ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'] : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+            const total = userData.weeklySchedule.length;
+            const chunkSize = Math.ceil(total / Math.min(total, 5));
+
+            let daysObj = {};
+            for (let d = 0; d < 5; d++) {
+                const start = d * chunkSize;
+                const end = Math.min(start + chunkSize, total);
+                daysObj[daysNames[d]] = userData.weeklySchedule.slice(start, end).map(w => w.name);
+            }
+
+            const sysLabel = userData.systemType === 'school' ? (lang === 'ar' ? 'المدرسة' : 'School') : (lang === 'ar' ? 'القدرات' : 'Qodrat');
+            const planObj = { id: planId, title: `${lang === 'ar' ? 'خطة الأسبوع' : 'Weekly Plan'} (${weekNum}) - ${sysLabel}`, date: todayDateStr, days: daysObj };
+            userData.weeklyPlans.push(planObj);
+            saveLocalUserData();
+            renderPlanModalContent(planObj);
+        }
+
+        function renderPlanModalContent(plan) {
+            const lang = userData.language || 'ar';
+            document.getElementById('planMainTitle').textContent = plan.title;
+            document.getElementById('planDateSpan').textContent = `${lang === 'ar' ? 'التاريخ' : 'Date'}: ${plan.date}`;
+            const container = document.getElementById('planDaysContainer');
+            container.innerHTML = '';
+
+            for (let day in plan.days) {
+                const missionsList = plan.days[day];
+                const dayCard = document.createElement('div');
+                dayCard.style.cssText = "background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary-neon); padding: 15px; border-radius: 12px; margin-bottom: 12px;";
+                
+                const h4 = document.createElement('h4');
+                h4.style.cssText = "color: var(--primary-neon); margin-bottom: 8px;";
+                h4.textContent = `🗓️ ${day}`;
+                dayCard.appendChild(h4);
+
+                const ul = document.createElement('ul');
+                ul.style.cssText = "list-style-type: none; padding-right: 10px;";
+                if (missionsList.length > 0) {
+                    missionsList.forEach(m => {
+                        const li = document.createElement('li');
+                        li.style.cssText = "margin-bottom: 5px; color: var(--text-color); opacity: 0.9;";
+                        li.textContent = `▫️ ${m}`;
+                        ul.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.style.opacity = '0.5';
+                    li.textContent = lang === 'ar' ? 'لا توجد مهام' : 'No missions';
+                    ul.appendChild(li);
+                }
+                dayCard.appendChild(ul);
+                container.appendChild(dayCard);
+            }
+        }
+
+        function openPlanModal(planId = null) {
+            const plan = planId !== null ? userData.weeklyPlans.find(p => p.id === planId) : userData.weeklyPlans[userData.weeklyPlans.length - 1];
+            const lang = userData.language || 'ar';
+            if (!plan) { alert(lang === 'ar' ? "لا توجد خطة أسبوعية محفوظة." : "No saved weekly plans."); return; }
+            renderPlanModalContent(plan);
+            document.getElementById('planModal').style.display = 'flex';
+        }
+        function closePlanModal() { document.getElementById('planModal').style.display = 'none'; }
+
+        function deleteSingleWeeklyPlan(planId) {
+            const lang = userData.language || 'ar';
+            if (confirm(lang === 'ar' ? "هل أنت متأكد من حذف هذه الخطة؟" : "Delete this plan?")) {
+                userData.weeklyPlans = userData.weeklyPlans.filter(p => p.id !== planId);
+                saveLocalUserData();
+                loadSavedPlansList();
+            }
+        }
+
+        function clearAllWeeklyPlans() {
+            const lang = userData.language || 'ar';
+            if (confirm(lang === 'ar' ? "حذف جميع الخطط المحفوظة؟" : "Delete all saved plans?")) {
+                userData.weeklyPlans = [];
+                saveLocalUserData();
+                loadSavedPlansList();
+            }
+        }
+
+        function loadSavedPlansList() {
+            const listDiv = document.getElementById('savedPlansList');
+            const lang = userData.language || 'ar';
+            if (!userData.weeklyPlans || userData.weeklyPlans.length === 0) {
+                listDiv.textContent = lang === 'ar' ? "لا توجد خطط محفوظة." : "No saved plans.";
+            } else {
+                listDiv.innerHTML = userData.weeklyPlans.map(p => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--border-color);">
+                        <span>📅 ${p.title}</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="add-qty-btn" style="padding: 4px 10px; font-size: 0.8rem;" onclick="openPlanModal(${p.id})">${lang === 'ar' ? 'فتح' : 'Open'}</button>
+                            <button onclick="deleteSingleWeeklyPlan(${p.id})" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function generateAndStoreCertificate() {
+            const interest = userData.interest || 'طب';
+            const gender = userData.gender || 'ذكر';
+            const lang = userData.language || 'ar';
+            const config = interestBrandingConfigs[interest] || interestBrandingConfigs['طب'];
+            const weekNum = userData.currentWeekNumber || 1;
+
+            if (userData.certificates.some(c => c.id === weekNum)) return;
+
+            const titlePrefix = (gender === 'أنثى') ? config.femaleCert[lang] : config.maleCert[lang];
+            const sysLabel = userData.systemType === 'school' ? (lang === 'ar' ? 'المدرسة' : 'School') : (lang === 'ar' ? 'القدرات' : 'Qodrat');
+
+            const certObject = {
+                id: weekNum,
+                title: lang === 'ar' ? `شهادة إنجاز الأسبوع (${weekNum}) - ${sysLabel}` : `Weekly Achievement Certificate (${weekNum})`,
+                holder: userData.gender === 'أنثى' ? (lang === 'ar' ? 'البطلة' : 'Heroine') : (lang === 'ar' ? 'البطل' : 'Hero'),
+                date: todayDateStr,
+                icon: config.certBadge,
+                prefixTitle: titlePrefix,
+                sector: config.sectorName[lang]
+            };
+
+            userData.certificates.push(certObject);
+            userData.currentWeekNumber++;
+            saveLocalUserData();
+        }
+
+        function openCertificate(weekId = null) {
+            const cert = weekId !== null ? userData.certificates.find(c => c.id === weekId) : userData.certificates[userData.certificates.length - 1];
+            const lang = userData.language || 'ar';
+            if (!cert) { alert(lang === 'ar' ? "لا توجد شهادات مفتوحة." : "No unlocked certificates."); return; }
+
+            const interest = userData.interest || 'طب';
+            const gender = userData.gender || 'ذكر';
+            const config = interestBrandingConfigs[interest] || interestBrandingConfigs['طب'];
+            const titlePrefix = (gender === 'أنثى') ? config.femaleCert[lang] : config.maleCert[lang];
+
+            document.getElementById('certHeaderBadge').textContent = config.certBadge;
+            document.getElementById('certWeekSubtitle').textContent = `${lang === 'ar' ? 'إنجاز الأسبوع' : 'Weekly Achievement'} (${cert.id}) - ${config.sectorName[lang]}`;
+            
+            document.getElementById('certHolder').textContent = titlePrefix;
+            document.getElementById('certDateSpan').textContent = `${lang === 'ar' ? 'التاريخ' : 'Date'}: ${cert.date}`;
+            document.getElementById('certificateModal').style.display = 'flex';
+        }
+
+        function closeCertificate() { document.getElementById('certificateModal').style.display = 'none'; }
+
+        function deleteSingleCertificate(certId) {
+            const lang = userData.language || 'ar';
+            if (confirm(lang === 'ar' ? "حذف هذه الشهادة؟" : "Delete this certificate?")) {
+                userData.certificates = userData.certificates.filter(c => c.id !== certId);
+                saveLocalUserData();
+                loadSavedCertificatesList();
+            }
+        }
+
+        function clearAllCertificates() {
+            const lang = userData.language || 'ar';
+            if (confirm(lang === 'ar' ? "حذف جميع الشهادات المحفوظة؟" : "Delete all saved certificates?")) {
+                userData.certificates = [];
+                saveLocalUserData();
+                loadSavedCertificatesList();
+            }
+        }
+
+        function loadSavedCertificatesList() {
+            const listDiv = document.getElementById('savedCertificatesList');
+            const lang = userData.language || 'ar';
+            if (!userData.certificates || userData.certificates.length === 0) {
+                listDiv.textContent = lang === 'ar' ? "لا توجد شهادات محفوظة." : "No saved certificates.";
+            } else {
+                listDiv.innerHTML = userData.certificates.map(c => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--border-color);">
+                        <span>📜 ${c.title}</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="add-qty-btn" style="padding: 4px 10px; font-size: 0.8rem;" onclick="openCertificate(${c.id})">${lang === 'ar' ? 'فتح' : 'Open'}</button>
+                            <button onclick="deleteSingleCertificate(${c.id})" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    </script>
+</body>
+</html>
